@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de directivas | Santa Ana</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <main class="admin-shell">
+        <section id="login-view" class="panel login-panel">
+            <p class="eyebrow">Instituto Santa Ana</p>
+            <h1>Panel de directivas</h1>
+            <p>Administra la información pública del instituto.</p>
+            <form id="login-form">
+                <label>Correo institucional<input id="email" type="email" required autocomplete="username"></label>
+                <label>Contraseña<input id="password" type="password" required autocomplete="current-password"></label>
+                <button type="submit">Entrar</button>
+                <p id="login-message" class="message"></p>
+            </form>
+        </section>
+
+        <section id="admin-view" hidden>
+            <header class="admin-header">
+                <div><p class="eyebrow">Contenido publicado</p><h1>Administración</h1></div>
+                <button id="logout-button" class="secondary">Cerrar sesión</button>
+            </header>
+            <form id="content-form">
+                <section class="panel">
+                    <h2>Información principal</h2>
+                        <div class="form-grid">
+                    <label>Nombre del instituto<input name="institution.name" required></label>
+                    <label>Etiqueta<input name="institution.badge"></label>
+                    <label class="wide">Descripción<textarea name="institution.description" rows="3"></textarea></label>
+                </div></section>
+                <section class="panel">
+                    <h2>Secciones del sitio</h2>
+                    <div class="form-grid">
+                        <label class="wide">Misión<textarea name="section.inicio.mission" rows="3"></textarea></label>
+                        <label class="wide">Visión<textarea name="section.inicio.vision" rows="3"></textarea></label>
+                        <label class="wide">Valores<textarea name="section.inicio.values" rows="3"></textarea></label>
+                        <label class="wide">Manual<textarea name="section.inicio.manual" rows="3"></textarea></label>
+                        <label class="wide">Conócenos<textarea name="section.conocenos" rows="4"></textarea></label>
+                        <label class="wide">Académico<textarea name="section.academico" rows="4"></textarea></label>
+                        <label class="wide">Instalaciones<textarea name="section.instalaciones" rows="4"></textarea></label>
+                        <label class="wide">Noticias<textarea name="section.noticias" rows="4"></textarea></label>
+                        <label class="wide">Contacto<textarea name="section.contacto" rows="4"></textarea></label>
+                    </div>
+                </section>
+                <section class="panel">
+                    <div class="section-heading"><h2>Avisos</h2><button type="button" id="add-notice" class="secondary">Añadir aviso</button></div><div id="notices-list"></div></section>
+                <section class="panel"><div class="section-heading"><h2>Instalaciones</h2><button type="button" id="add-instalacion" class="secondary">Añadir instalación</button></div><div id="instalaciones-list"></div></section>
+                <section class="panel">
+                    <h2>Galería de fotos</h2>
+                    <p class="hint">Sube tus fotografías a la carpeta <code>fotos-galeria/</code> en el servidor. Las imágenes se mostrarán automáticamente.</p>
+                </section>
+                <section class="panel"><div class="section-heading"><h2>Docentes</h2><button type="button" id="add-teacher" class="secondary">Añadir docente</button></div><p class="hint">El número de orden decide la posición de cada ficha.</p><div id="teachers-list"></div></section>
+                <div class="save-bar"><span id="save-message" class="message"></span><button type="submit">Guardar cambios</button></div>
+            </form>
+        </section>
+    </main>
+    <script src="admin.js"></script>
+</body>
+</html>

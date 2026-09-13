@@ -1,0 +1,107 @@
+{
+  "institution": {
+    "name": "Instituto Santa Ana Luz del Carmen",
+    "badge": "Educación integral",
+    "description": "Información institucional "
+  },
+  "notices": [
+    {
+      "title": "Semana Cultural",
+      "text": "Información"
+    },
+    {
+      "title": "Inscripciones",
+      "text": "Información"
+    },
+    {
+      "title": "Próximo Evento",
+      "text": "Información"
+    }
+  ],
+  "docentes": [
+    {
+      "id": "docente-1788047501409",
+      "order": 1,
+      "name": "Anita ",
+      "photo": "",
+      "infografia": "",
+      "info": "Asignatura: Ética y Emprendimiento",
+      "profession": "coordinadora"
+    },
+    {
+      "id": "docente-1",
+      "order": 2,
+      "name": "Sebastián",
+      "photo": "",
+      "infografia": "Docente de biología",
+      "info": "Asignatura: Biología",
+      "profession": "Acompañamiento y formación integral"
+    },
+    {
+      "id": "docente-2",
+      "order": 3,
+      "name": "Dagoberto",
+      "photo": "",
+      "infografia": "Docente de matemáticas",
+      "info": "Asignatura: Matemáticas",
+      "profession": "Enseñanza aplicada y apoyo académico"
+    },
+    {
+      "id": "docente-1788454163806",
+      "order": 4,
+      "name": "",
+      "photo": "",
+      "infografia": "",
+      "info": "",
+      "profession": ""
+    },
+    {
+      "id": "docente-1788454164294",
+      "order": 5,
+      "name": "",
+      "photo": "",
+      "infografia": "",
+      "info": "",
+      "profession": ""
+    }
+  ],
+  "instalaciones": [
+    {
+      "id": "instalacion-1",
+      "nombre": "Biblioteca",
+      "descripcion": "Espacios de estudio y consulta con amplias colecciones de libros",
+      "foto": ""
+    },
+    {
+      "id": "instalacion-2",
+      "nombre": "Laboratorio de Ciencias",
+      "descripcion": "Equipado con instrumentos para prácticas de biología, química y física",
+      "foto": ""
+    },
+    {
+      "id": "instalacion-3",
+      "nombre": "Sala de Informática",
+      "descripcion": "Computadores modernos para clases de tecnología e informática",
+      "foto": ""
+    },
+    {
+      "id": "instalacion-4",
+      "nombre": "Cancha Deportiva",
+      "descripcion": "Instalaciones para educación física y actividades recreativas",
+      "foto": ""
+    }
+  ],
+  "sections": {
+    "inicio": {
+      "mission": "dios patria y pene",
+      "vision": "seguir la mision",
+      "values": "muy caros ",
+      "manual": "el aprendizaje"
+    },
+    "conocenos": "a todos",
+    "academico": "el estudio",
+    "instalaciones": "hacen falso contacto",
+    "noticias": "en el televisor ",
+    "contacto": "fisico?, poco la verdad"
+  }
+}
