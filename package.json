@@ -19,7 +19,8 @@
   "author": "Samuel Mateo Yate, Nicolas Camen",
   "license": "MIT",
   "dependencies": {
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "dotenv": "^16.4.5"
   },
   "devDependencies": {
     "live-server": "^1.2.1"

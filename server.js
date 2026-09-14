@@ -188,10 +188,7 @@ app.get('/api/instalaciones', (req, res) => {
         res.status(500).json({
             estado: 'error',
             mensaje: 'No se pudieron leer las instalaciones'
-        });
-    }
-
-    res.json(imagenes.sort((a, b) => a.localeCompare(b, 'es', { numeric: true })));
+        });        }
 });
 
 //==========================
