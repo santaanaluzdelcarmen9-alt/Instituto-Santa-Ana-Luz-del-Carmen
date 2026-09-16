@@ -199,6 +199,8 @@ http://localhost:3000
 
 ## Autor
 
+Autor: Samuel Mateo Yate Escobar 
+
 Proyecto desarrollado para el Instituto Santa Ana Luz del Carmen.
 
 ## Licencia
