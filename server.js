@@ -82,14 +82,6 @@ app.post('/api/admin/login', (req, res) => {
     res.json({ token, email });
 });
 
-app.post('/api/admin/logout', requireAdmin, (req, res) => {
-    const token = getToken(req);
-    sessions.delete(token);
-    res.json({ ok: true });
-});
-
-app.get('/api/admin/content', requireAdmin, (req, res) => res.json(readContent()));
-
 app.put('/api/admin/content', requireAdmin, (req, res) => {
     const next = req.body;
     if (!next || !next.institution || !Array.isArray(next.notices) || !Array.isArray(next.docentes)) {
@@ -101,6 +93,7 @@ app.put('/api/admin/content', requireAdmin, (req, res) => {
         institution: next.institution,
         notices: next.notices,
         docentes: next.docentes,
+        instalaciones: Array.isArray(next.instalaciones) ? next.instalaciones : [], // <-- esto faltaba
         sections: normalizedSections
     };
 
