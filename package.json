@@ -22,7 +22,7 @@
     "express": "^5.2.1",
     "dotenv": "^16.4.5",
     "mongodb": "^6.10.0",
-    "clou-lang": "^2.5.1"
+    "cloudinary": "^2.5.1"
   },
   "devDependencies": {
     "live-server": "^1.2.1"
