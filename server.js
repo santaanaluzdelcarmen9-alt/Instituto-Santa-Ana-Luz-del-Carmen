@@ -6,11 +6,11 @@ const path = require('path');
 const crypto = require('crypto');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const SESSION_TTL = 1000 * 60 * 60 * 8; // 8 horas
 
 // permite recibir datos en formato JSON
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 const dataPath = path.join(__dirname, 'data', 'site-content.json');
 const sessions = new Map();
@@ -84,6 +84,27 @@ app.post('/api/admin/login', (req, res) => {
     res.json({ token, email });
 });
 
+app.get('/api/admin/content', requireAdmin, (req, res) => {
+    try {
+        const content = readContent();
+        res.json({
+            institution: content.institution || {},
+            notices: Array.isArray(content.notices) ? content.notices : [],
+            docentes: Array.isArray(content.docentes) ? content.docentes : [],
+            instalaciones: Array.isArray(content.instalaciones) ? content.instalaciones : [],
+            sections: content.sections || {}
+        });
+    } catch (error) {
+        console.error('Error leyendo contenido:', error);
+        res.status(500).json({ mensaje: 'No se pudo leer el contenido' });
+    }
+});
+
+app.post('/api/admin/logout', requireAdmin, (req, res) => {
+    sessions.delete(getToken(req));
+    res.json({ ok: true });
+});
+
 app.put('/api/admin/content', requireAdmin, (req, res) => {
     const next = req.body;
     if (!next || !next.institution || !Array.isArray(next.notices) || !Array.isArray(next.docentes)) {
@@ -114,6 +135,7 @@ app.post('/api/admin/upload', requireAdmin, (req, res) => {
     const safeName = path.basename(fileName).replace(/[^a-zA-Z0-9._-]/g, '_');
     const finalName = path.extname(safeName) ? safeName : `${safeName}${extension}`;
     const targetFolder = path.join(__dirname, folder);
+        fs.mkdirSync(targetFolder, { recursive: true });
     const base64 = String(data).replace(/^data:[^;]+;base64,/, '');
     fs.writeFileSync(path.join(targetFolder, finalName), Buffer.from(base64, 'base64'));
     res.json({ fileName: finalName });
@@ -219,9 +241,8 @@ app.get('/api/docentes', (req, res) => {
 
 //inicio del servidor
 
-app.listen(PORT, () => {
-    console.log
-    (`Servidor funcionando en http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Servidor funcionando en el puerto ${PORT}`);
 });
 
 app.get('/api/noticias', (req, res) => {

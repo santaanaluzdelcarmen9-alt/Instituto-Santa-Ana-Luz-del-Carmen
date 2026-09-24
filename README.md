@@ -206,3 +206,13 @@ Proyecto desarrollado para el Instituto Santa Ana Luz del Carmen.
 ## Licencia
 
 Este proyecto está bajo la licencia MIT.
+
+## Comandos para Git bash
+
+cd "/d/sml - copia - copia-definitiva/santa ana/instituto-santa-ana-luz-del-carmen"
+
+git add .
+
+git commint -m"texto de el cambio"
+
+git push 
