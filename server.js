@@ -48,6 +48,65 @@ function requireAdmin(req, res, next) {
     next();
 }
 
+// ==========================
+// LOGIN DE ESTUDIANTES Y PROFESORES (sección Actividades)
+// ==========================
+const usuariosPath = path.join(__dirname, 'data', 'usuarios.json');
+const userSessions = new Map();  // token -> { usuario, nombre, rol, issuedAt }
+const loginAttempts = new Map(); // "ip|usuario" -> { count, blockedUntil }
+const rolesValidos = ['estudiante', 'profesor'];
+const MAX_INTENTOS = 5;
+const BLOQUEO_MS = 1000 * 60 * 15; // 15 minutos
+
+function readUsuarios() {
+    try {
+        const data = JSON.parse(fs.readFileSync(usuariosPath, 'utf8'));
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        return [];
+    }
+}
+
+function hashPassword(password, salt) {
+    return crypto.scryptSync(password, salt, 64).toString('hex');
+}
+
+function passwordCorrecta(password, user) {
+    const calculado = Buffer.from(hashPassword(password, user.salt), 'hex');
+    const guardado = Buffer.from(user.hash, 'hex');
+    return calculado.length === guardado.length && crypto.timingSafeEqual(calculado, guardado);
+}
+
+function getUserSession(req) {
+    const token = getToken(req);
+    const session = token && userSessions.get(token);
+    if (!session) return null;
+
+    if (Date.now() - session.issuedAt > SESSION_TTL) {
+        userSessions.delete(token);
+        return null;
+    }
+    return session;
+}
+
+// requireUser() -> cualquier usuario con sesión | requireUser('profesor') -> solo ese rol
+function requireUser(rol) {
+    return (req, res, next) => {
+        const session = getUserSession(req);
+        if (!session) {
+            return res.status(401).json({ mensaje: 'Sesión no válida o expirada' });
+        }
+        if (rol && session.rol !== rol) {
+            return res.status(403).json({ mensaje: 'No tienes permiso para esto' });
+        }
+        req.user = session;
+        next();
+    };
+}
+
+// los datos (incluye usuarios.json) nunca se sirven como archivos públicos
+app.use('/data', (req, res) => res.status(404).json({ mensaje: 'No encontrado' }));
+
 // servir los archivos del frontend
 app.use(express.static(__dirname));
 
@@ -60,6 +119,7 @@ app.get('/api/public-content', (req, res) => {
         docentes: Array.isArray(content.docentes) ? content.docentes : [],
         sections: {
             inicio: sections.inicio || {},
+            Actividades: sections.Actividades || 'informacion',
             conocenos: sections.conocenos || 'informacion',
             academico: sections.academico || 'informacion',
             instalaciones: sections.instalaciones || 'informacion',
@@ -139,6 +199,58 @@ app.post('/api/admin/upload', requireAdmin, (req, res) => {
     const base64 = String(data).replace(/^data:[^;]+;base64,/, '');
     fs.writeFileSync(path.join(targetFolder, finalName), Buffer.from(base64, 'base64'));
     res.json({ fileName: finalName });
+});
+
+//==========================
+//API DE ACTIVIDADES (login estudiantes y profesores)
+//==========================
+app.post('/api/actividades/login', (req, res) => {
+    const usuario = String(req.body.usuario || '').trim().toLowerCase();
+    const password = String(req.body.password || '');
+    const rol = String(req.body.rol || '');
+    const clave = `${req.ip}|${usuario}`;
+
+    let intentos = loginAttempts.get(clave);
+    if (intentos && intentos.blockedUntil && intentos.blockedUntil <= Date.now()) {
+        loginAttempts.delete(clave);
+        intentos = undefined;
+    }
+    if (intentos && intentos.blockedUntil > Date.now()) {
+        return res.status(429).json({ mensaje: 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.' });
+    }
+
+    if (!rolesValidos.includes(rol)) {
+        return res.status(400).json({ mensaje: 'Tipo de cuenta inválido' });
+    }
+
+    const user = readUsuarios().find((u) => u.usuario === usuario && u.rol === rol);
+    let ok = false;
+    if (user) {
+        ok = passwordCorrecta(password, user);
+    } else {
+        hashPassword(password, 'usuario-inexistente'); // mismo tiempo de respuesta exista o no el usuario
+    }
+
+    if (!ok) {
+        const count = (intentos?.count || 0) + 1;
+        loginAttempts.set(clave, { count, blockedUntil: count >= MAX_INTENTOS ? Date.now() + BLOQUEO_MS : 0 });
+        return res.status(401).json({ mensaje: 'Usuario o contraseña incorrectos' });
+    }
+
+    loginAttempts.delete(clave);
+    const token = crypto.randomBytes(32).toString('hex');
+    userSessions.set(token, { usuario: user.usuario, nombre: user.nombre || user.usuario, rol: user.rol, issuedAt: Date.now() });
+    res.json({ token, usuario: user.usuario, nombre: user.nombre || user.usuario, rol: user.rol });
+});
+
+app.get('/api/actividades/me', requireUser(), (req, res) => {
+    const { usuario, nombre, rol } = req.user;
+    res.json({ usuario, nombre, rol });
+});
+
+app.post('/api/actividades/logout', requireUser(), (req, res) => {
+    userSessions.delete(getToken(req));
+    res.json({ ok: true });
 });
 
 //==========================

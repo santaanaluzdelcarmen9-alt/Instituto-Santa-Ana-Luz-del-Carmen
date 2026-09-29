@@ -58,7 +58,7 @@ function render() {
     $('[name="section.inicio.vision"]').value = inicio.vision || '';
     $('[name="section.inicio.values"]').value = inicio.values || '';
     $('[name="section.inicio.manual"]').value = inicio.manual || '';
-    $('[name="section.conocenos"]').value = sections.conocenos || '';
+    $('[name="section.Actividades"]').value = sections.Actividades || '';
     $('[name="section.academico"]').value = sections.academico || '';
     $('[name="section.instalaciones"]').value = sections.instalaciones || '';
     $('[name="section.noticias"]').value = sections.noticias || '';
@@ -108,7 +108,7 @@ function collect() {
     inicio.values = $('[name="section.inicio.values"]').value;
     inicio.manual = $('[name="section.inicio.manual"]').value;
     sections.inicio = inicio;
-    sections.conocenos = $('[name="section.conocenos"]').value;
+    sections.Actividades = $('[name="section.Actividades"]').value;
     sections.academico = $('[name="section.academico"]').value;
     sections.instalaciones = $('[name="section.instalaciones"]').value;
     sections.noticias = $('[name="section.noticias"]').value;

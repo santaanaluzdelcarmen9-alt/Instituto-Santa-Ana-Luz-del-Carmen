@@ -234,7 +234,7 @@ main {
     min-height: clamp(150px, 30vh, 220px);
     border-radius: var(--radius-lg);
     width: 100%;
-    background-image: url('fotos-grado-once/IMG-20260724-WA0046.jpg');
+    background-image: url();
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -757,3 +757,149 @@ main {
     margin: 0;
 }
 
+/* ============================================
+   ACTIVIDADES - LOGIN ESTUDIANTES / PROFESORES
+   ============================================ */
+.actividades-section [hidden] {
+    display: none !important;
+}
+
+.actividades-login {
+    margin-top: var(--spacing-md);
+    max-width: 460px;
+}
+
+.actividades-panel {
+    margin-top: var(--spacing-md);
+}
+
+.actividades-tabs {
+    display: inline-flex;
+    gap: 4px;
+    padding: 4px;
+    margin-bottom: var(--spacing-md);
+    background: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+}
+
+.actividades-tab {
+    border: 0;
+    background: transparent;
+    color: var(--color-text);
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: var(--font-sm);
+    cursor: pointer;
+    transition: background .2s, color .2s;
+}
+
+.actividades-tab:hover {
+    background: #e8eff8;
+}
+
+.actividades-tab.active {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.actividades-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-sm);
+    padding: var(--spacing-md);
+    background: var(--color-bg-light);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.actividades-form h3 {
+    color: var(--color-dark);
+    font-size: var(--font-md);
+}
+
+.actividades-form label {
+    font-weight: 700;
+    font-size: var(--font-sm);
+    color: var(--color-dark);
+}
+
+.actividades-form input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-size: var(--font-sm);
+    background: #fff;
+}
+
+.actividades-form input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(0, 87, 184, .12);
+}
+
+.actividades-submit,
+.actividades-salir {
+    border: 0;
+    border-radius: 8px;
+    padding: 12px 18px;
+    font-weight: 700;
+    font-size: var(--font-sm);
+    cursor: pointer;
+    transition: background .2s;
+}
+
+.actividades-submit {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.actividades-submit:hover {
+    background: #003f86;
+}
+
+.actividades-submit:disabled {
+    opacity: .6;
+    cursor: wait;
+}
+
+.actividades-salir {
+    background: #e8f5ee;
+    color: #1c7c6b;
+}
+
+.actividades-salir:hover {
+    background: #d5ecdf;
+}
+
+.actividades-tab:focus-visible,
+.actividades-submit:focus-visible,
+.actividades-salir:focus-visible {
+    outline: 3px solid rgba(0, 87, 184, .35);
+    outline-offset: 2px;
+}
+
+/* .section-card p (0,1,1) pisaría a .actividades-mensaje (0,1,0), por eso el selector doble */
+.actividades-section .actividades-mensaje {
+    min-height: 1.4em;
+    color: #9d3030;
+    font-size: var(--font-sm);
+}
+
+.actividades-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--gap-md);
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.actividades-bar h3 {
+    color: var(--color-dark);
+    font-size: var(--font-lg);
+}

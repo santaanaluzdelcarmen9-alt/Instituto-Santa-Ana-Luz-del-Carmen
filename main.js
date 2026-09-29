@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
         docentes: [],
         sections: {
             inicio: { mission: 'informacion', vision: 'informacion', values: 'informacion', manual: 'informacion' },
-            conocenos: 'informacion',
+            Actividades: 'informacion',
             academico: 'informacion',
             instalaciones: 'informacion',
             noticias: 'informacion',
@@ -76,10 +76,35 @@ document.addEventListener('DOMContentLoaded', function () {
             </section>
         `;
         },
-        conocenos: () => `
-            <section class="section-card">
-                <h2>Conócenos</h2>
-                <p>${escapeHtml(publicContent.sections?.conocenos || 'informacion')}</p>
+        Actividades: () => `
+            <section class="section-card actividades-section">
+                <h2>Actividades</h2>
+                <p>${escapeHtml(publicContent.sections?.Actividades || 'informacion')}</p>
+
+                <div id="actividades-login" class="actividades-login">
+                    <div class="actividades-tabs" role="tablist" aria-label="Tipo de cuenta">
+                        <button type="button" class="actividades-tab active" role="tab" aria-selected="true" data-rol="estudiante">Estudiantes</button>
+                        <button type="button" class="actividades-tab" role="tab" aria-selected="false" data-rol="profesor">Profesores</button>
+                    </div>
+
+                    <form id="actividades-form" class="actividades-form">
+                        <h3 id="actividades-titulo">Ingreso de estudiantes</h3>
+                        <label for="actividades-usuario">Usuario</label>
+                        <input id="actividades-usuario" type="text" required autocomplete="username">
+                        <label for="actividades-password">Contraseña</label>
+                        <input id="actividades-password" type="password" required autocomplete="current-password">
+                        <button type="submit" class="actividades-submit">Entrar</button>
+                        <p id="actividades-mensaje" class="actividades-mensaje" role="alert"></p>
+                    </form>
+                </div>
+
+                <div id="actividades-panel" class="actividades-panel" hidden>
+                    <div class="actividades-bar">
+                        <h3 id="actividades-bienvenida"></h3>
+                        <button type="button" id="actividades-salir" class="actividades-salir">Cerrar sesión</button>
+                    </div>
+                    <p id="actividades-contenido"></p>
+                </div>
             </section>
         `,
         academico: () => `
@@ -164,6 +189,135 @@ document.addEventListener('DOMContentLoaded', function () {
             </section>
         `
     };
+
+// ==========================
+    // ACTIVIDADES: login de estudiantes y profesores
+    // ==========================
+    const ACTIVIDADES_TOKEN_KEY = 'santa-ana-actividades-token';
+
+    function actividadesRequest(url, options = {}) {
+        const token = sessionStorage.getItem(ACTIVIDADES_TOKEN_KEY);
+        const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+
+        if (token) {
+            headers.Authorization = `Bearer ${token}`;
+        }
+
+        return fetch(url, { ...options, headers });
+    }
+
+    function initActividades() {
+        const loginView = document.getElementById('actividades-login');
+        const panelView = document.getElementById('actividades-panel');
+        const form = document.getElementById('actividades-form');
+        const titulo = document.getElementById('actividades-titulo');
+        const mensaje = document.getElementById('actividades-mensaje');
+        const bienvenida = document.getElementById('actividades-bienvenida');
+        const contenido = document.getElementById('actividades-contenido');
+        const botonSalir = document.getElementById('actividades-salir');
+        const tabs = document.querySelectorAll('.actividades-tab');
+
+        if (!loginView || !panelView || !form) return;
+
+        let rolActual = 'estudiante';
+
+        const textos = {
+            estudiante: {
+                titulo: 'Ingreso de estudiantes',
+                contenido: 'Aquí verás las actividades que publiquen tus profesores.'
+            },
+            profesor: {
+                titulo: 'Ingreso de profesores',
+                contenido: 'Aquí podrás publicar y revisar actividades para tus estudiantes.'
+            }
+        };
+
+        function mostrarPanel(cuenta) {
+            loginView.hidden = true;
+            panelView.hidden = false;
+            panelView.dataset.rol = cuenta.rol;
+            bienvenida.textContent = `Hola, ${cuenta.nombre || cuenta.usuario}`;
+            contenido.textContent = textos[cuenta.rol]?.contenido || '';
+        }
+
+        function mostrarLogin() {
+            panelView.hidden = true;
+            loginView.hidden = false;
+            form.reset();
+            mensaje.textContent = '';
+        }
+
+        tabs.forEach((tab) => {
+            tab.addEventListener('click', () => {
+                rolActual = tab.dataset.rol;
+                tabs.forEach((item) => {
+                    const activo = item === tab;
+                    item.classList.toggle('active', activo);
+                    item.setAttribute('aria-selected', String(activo));
+                });
+                titulo.textContent = textos[rolActual].titulo;
+                mensaje.textContent = '';
+                form.reset();
+            });
+        });
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const boton = form.querySelector('.actividades-submit');
+            boton.disabled = true;
+            mensaje.textContent = '';
+
+            try {
+                const response = await actividadesRequest('/api/actividades/login', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        usuario: document.getElementById('actividades-usuario').value,
+                        password: document.getElementById('actividades-password').value,
+                        rol: rolActual
+                    })
+                });
+                const data = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    mensaje.textContent = response.status === 401
+                        ? 'Usuario o contraseña incorrectos. Revisa también que estés en la pestaña correcta.'
+                        : (data.mensaje || 'No se pudo iniciar sesión.');
+                    return;
+                }
+
+                sessionStorage.setItem(ACTIVIDADES_TOKEN_KEY, data.token);
+                form.reset();
+                mostrarPanel(data);
+            } catch (error) {
+                console.error('Error al iniciar sesión en Actividades:', error);
+                mensaje.textContent = 'No se pudo conectar con el servidor.';
+            } finally {
+                boton.disabled = false;
+            }
+        });
+
+        botonSalir.addEventListener('click', async () => {
+            try {
+                await actividadesRequest('/api/actividades/logout', { method: 'POST' });
+            } catch (error) {
+                console.warn('No se pudo cerrar sesión en el servidor', error);
+            }
+            sessionStorage.removeItem(ACTIVIDADES_TOKEN_KEY);
+            mostrarLogin();
+        });
+
+        // Si ya había una sesión iniciada (por ejemplo, al volver a esta sección), se restaura
+        if (sessionStorage.getItem(ACTIVIDADES_TOKEN_KEY)) {
+            actividadesRequest('/api/actividades/me')
+                .then((response) => (response.ok ? response.json() : Promise.reject()))
+                .then(mostrarPanel)
+                .catch(() => {
+                    sessionStorage.removeItem(ACTIVIDADES_TOKEN_KEY);
+                    mostrarLogin();
+                });
+        }
+    }
+
 
     const gradoOnceStudents = [
         {
@@ -661,6 +815,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (sectionName === 'noticias') {
             setTimeout(renderNoticias, 0);
+        }
+
+        if (sectionName === 'Actividades') {
+            setTimeout(initActividades, 0);
         }
     }
 
