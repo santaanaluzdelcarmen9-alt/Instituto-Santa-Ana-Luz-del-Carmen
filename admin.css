@@ -210,6 +210,53 @@ button.secondary {
     font-size:.9rem
 }
 
+.user-item {
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px
+}
+
+.user-info {
+    display:flex;
+    flex-direction:column;
+    gap:4px
+}
+
+.user-estado {
+    align-self:flex-start;
+    font-size:.75rem;
+    font-weight:700;
+    padding:3px 10px;
+    border-radius:999px
+}
+
+.estado-pendiente { background:#fff4d6; color:#8a5a00 }
+.estado-aprobado { background:var(--mint); color:#1c7c6b }
+.estado-rechazado { background:#fae7e7; color:#9d3030 }
+
+.user-actions {
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:8px
+}
+
+.user-actions select {
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:11px;
+    font:inherit;
+    color:var(--ink);
+    background:#fbfcfd
+}
+
+button.danger {
+    background:#fae7e7;
+    color:#9d3030
+}
+
 .message {
     min-height:20px;
     color:var(--blue);

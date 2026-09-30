@@ -773,37 +773,6 @@ main {
     margin-top: var(--spacing-md);
 }
 
-.actividades-tabs {
-    display: inline-flex;
-    gap: 4px;
-    padding: 4px;
-    margin-bottom: var(--spacing-md);
-    background: var(--color-bg-light);
-    border: 1px solid var(--color-border);
-    border-radius: 999px;
-}
-
-.actividades-tab {
-    border: 0;
-    background: transparent;
-    color: var(--color-text);
-    padding: 10px 20px;
-    border-radius: 999px;
-    font-weight: 700;
-    font-size: var(--font-sm);
-    cursor: pointer;
-    transition: background .2s, color .2s;
-}
-
-.actividades-tab:hover {
-    background: #e8eff8;
-}
-
-.actividades-tab.active {
-    background: var(--color-primary);
-    color: #fff;
-}
-
 .actividades-form {
     display: flex;
     flex-direction: column;
@@ -819,28 +788,15 @@ main {
     font-size: var(--font-md);
 }
 
-.actividades-form label {
-    font-weight: 700;
+.actividades-section .actividades-ayuda {
+    color: var(--color-text);
     font-size: var(--font-sm);
-    color: var(--color-dark);
 }
 
-.actividades-form input {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
-    font-size: var(--font-sm);
-    background: #fff;
+.actividades-google {
+    min-height: 44px;
 }
 
-.actividades-form input:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(0, 87, 184, .12);
-}
-
-.actividades-submit,
 .actividades-salir {
     border: 0;
     border-radius: 8px;
@@ -849,23 +805,6 @@ main {
     font-size: var(--font-sm);
     cursor: pointer;
     transition: background .2s;
-}
-
-.actividades-submit {
-    background: var(--color-primary);
-    color: #fff;
-}
-
-.actividades-submit:hover {
-    background: #003f86;
-}
-
-.actividades-submit:disabled {
-    opacity: .6;
-    cursor: wait;
-}
-
-.actividades-salir {
     background: #e8f5ee;
     color: #1c7c6b;
 }
@@ -874,8 +813,6 @@ main {
     background: #d5ecdf;
 }
 
-.actividades-tab:focus-visible,
-.actividades-submit:focus-visible,
 .actividades-salir:focus-visible {
     outline: 3px solid rgba(0, 87, 184, .35);
     outline-offset: 2px;

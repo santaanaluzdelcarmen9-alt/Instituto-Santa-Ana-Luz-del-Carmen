@@ -4,6 +4,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { OAuth2Client } = require('google-auth-library');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -49,14 +50,16 @@ function requireAdmin(req, res, next) {
 }
 
 // ==========================
-// LOGIN DE ESTUDIANTES Y PROFESORES (sección Actividades)
+// LOGIN DE ESTUDIANTES Y PROFESORES CON GOOGLE (sección Actividades)
 // ==========================
+// Cada persona entra con su cuenta de Google. La primera vez queda "pendiente"
+// hasta que las directivas la aprueban en admin.html y le asignan un rol.
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 const usuariosPath = path.join(__dirname, 'data', 'usuarios.json');
-const userSessions = new Map();  // token -> { usuario, nombre, rol, issuedAt }
-const loginAttempts = new Map(); // "ip|usuario" -> { count, blockedUntil }
+const userSessions = new Map(); // token -> { email, nombre, rol, issuedAt }
 const rolesValidos = ['estudiante', 'profesor'];
-const MAX_INTENTOS = 5;
-const BLOQUEO_MS = 1000 * 60 * 15; // 15 minutos
+const estadosValidos = ['pendiente', 'aprobado', 'rechazado'];
 
 function readUsuarios() {
     try {
@@ -67,14 +70,16 @@ function readUsuarios() {
     }
 }
 
-function hashPassword(password, salt) {
-    return crypto.scryptSync(password, salt, 64).toString('hex');
+function writeUsuarios(usuarios) {
+    fs.mkdirSync(path.dirname(usuariosPath), { recursive: true });
+    fs.writeFileSync(usuariosPath, JSON.stringify(usuarios, null, 2));
 }
 
-function passwordCorrecta(password, user) {
-    const calculado = Buffer.from(hashPassword(password, user.salt), 'hex');
-    const guardado = Buffer.from(user.hash, 'hex');
-    return calculado.length === guardado.length && crypto.timingSafeEqual(calculado, guardado);
+// cierra todas las sesiones abiertas de un correo (al cambiar su rol o quitarle el acceso)
+function cerrarSesionesDe(email) {
+    for (const [token, session] of userSessions) {
+        if (session.email === email) userSessions.delete(token);
+    }
 }
 
 function getUserSession(req) {
@@ -202,54 +207,116 @@ app.post('/api/admin/upload', requireAdmin, (req, res) => {
 });
 
 //==========================
-//API DE ACTIVIDADES (login estudiantes y profesores)
+//API DE ACTIVIDADES (login con Google de estudiantes y profesores)
 //==========================
-app.post('/api/actividades/login', (req, res) => {
-    const usuario = String(req.body.usuario || '').trim().toLowerCase();
-    const password = String(req.body.password || '');
-    const rol = String(req.body.rol || '');
-    const clave = `${req.ip}|${usuario}`;
+app.get('/api/actividades/config', (req, res) => {
+    res.json({ googleClientId: GOOGLE_CLIENT_ID });
+});
 
-    let intentos = loginAttempts.get(clave);
-    if (intentos && intentos.blockedUntil && intentos.blockedUntil <= Date.now()) {
-        loginAttempts.delete(clave);
-        intentos = undefined;
-    }
-    if (intentos && intentos.blockedUntil > Date.now()) {
-        return res.status(429).json({ mensaje: 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.' });
+app.post('/api/actividades/google', async (req, res) => {
+    if (!GOOGLE_CLIENT_ID) {
+        return res.status(503).json({ mensaje: 'El inicio de sesión con Google aún no está configurado' });
     }
 
-    if (!rolesValidos.includes(rol)) {
-        return res.status(400).json({ mensaje: 'Tipo de cuenta inválido' });
+    // Google firma el token; aquí se comprueba la firma y que fue emitido para este sitio
+    let payload;
+    try {
+        const ticket = await googleClient.verifyIdToken({
+            idToken: String(req.body.credential || ''),
+            audience: GOOGLE_CLIENT_ID
+        });
+        payload = ticket.getPayload();
+    } catch (error) {
+        return res.status(401).json({ mensaje: 'No se pudo verificar la cuenta de Google' });
     }
 
-    const user = readUsuarios().find((u) => u.usuario === usuario && u.rol === rol);
-    let ok = false;
-    if (user) {
-        ok = passwordCorrecta(password, user);
-    } else {
-        hashPassword(password, 'usuario-inexistente'); // mismo tiempo de respuesta exista o no el usuario
+    if (!payload?.email || !payload.email_verified) {
+        return res.status(401).json({ mensaje: 'La cuenta de Google no tiene un correo verificado' });
     }
 
-    if (!ok) {
-        const count = (intentos?.count || 0) + 1;
-        loginAttempts.set(clave, { count, blockedUntil: count >= MAX_INTENTOS ? Date.now() + BLOQUEO_MS : 0 });
-        return res.status(401).json({ mensaje: 'Usuario o contraseña incorrectos' });
+    const email = payload.email.toLowerCase();
+    const usuarios = readUsuarios();
+    let user = usuarios.find((u) => u.email === email);
+
+    if (!user) {
+        user = {
+            email,
+            nombre: payload.name || email,
+            foto: payload.picture || '',
+            rol: null,
+            estado: 'pendiente',
+            creado: new Date().toISOString()
+        };
+        usuarios.push(user);
+        writeUsuarios(usuarios);
     }
 
-    loginAttempts.delete(clave);
+    if (user.estado === 'pendiente') {
+        return res.status(403).json({ estado: 'pendiente', mensaje: 'Tu solicitud fue recibida. Las directivas deben aprobar tu cuenta antes de que puedas entrar.' });
+    }
+    if (user.estado !== 'aprobado' || !rolesValidos.includes(user.rol)) {
+        return res.status(403).json({ estado: 'rechazado', mensaje: 'Tu cuenta no tiene acceso. Comunícate con las directivas del instituto.' });
+    }
+
     const token = crypto.randomBytes(32).toString('hex');
-    userSessions.set(token, { usuario: user.usuario, nombre: user.nombre || user.usuario, rol: user.rol, issuedAt: Date.now() });
-    res.json({ token, usuario: user.usuario, nombre: user.nombre || user.usuario, rol: user.rol });
+    userSessions.set(token, { email: user.email, nombre: user.nombre, rol: user.rol, issuedAt: Date.now() });
+    res.json({ token, email: user.email, nombre: user.nombre, rol: user.rol });
 });
 
 app.get('/api/actividades/me', requireUser(), (req, res) => {
-    const { usuario, nombre, rol } = req.user;
-    res.json({ usuario, nombre, rol });
+    const { email, nombre, rol } = req.user;
+    res.json({ email, nombre, rol });
 });
 
 app.post('/api/actividades/logout', requireUser(), (req, res) => {
     userSessions.delete(getToken(req));
+    res.json({ ok: true });
+});
+
+//==========================
+//API DE CUENTAS (las directivas aprueban solicitudes y asignan roles)
+//==========================
+app.get('/api/admin/usuarios', requireAdmin, (req, res) => {
+    const usuarios = readUsuarios().sort((a, b) => String(b.creado).localeCompare(String(a.creado)));
+    res.json(usuarios);
+});
+
+app.put('/api/admin/usuarios/:email', requireAdmin, (req, res) => {
+    const email = String(req.params.email).toLowerCase();
+    const estado = String(req.body.estado || '');
+    const rol = req.body.rol ? String(req.body.rol) : null;
+
+    if (!estadosValidos.includes(estado)) {
+        return res.status(400).json({ mensaje: 'Estado inválido' });
+    }
+    if (estado === 'aprobado' && !rolesValidos.includes(rol)) {
+        return res.status(400).json({ mensaje: 'Para aprobar una cuenta hay que elegir un rol' });
+    }
+
+    const usuarios = readUsuarios();
+    const user = usuarios.find((u) => u.email === email);
+    if (!user) {
+        return res.status(404).json({ mensaje: 'Cuenta no encontrada' });
+    }
+
+    user.estado = estado;
+    if (estado === 'aprobado') user.rol = rol;
+    writeUsuarios(usuarios);
+    cerrarSesionesDe(email); // así un cambio de rol o un bloqueo aplica de inmediato
+    res.json(user);
+});
+
+app.delete('/api/admin/usuarios/:email', requireAdmin, (req, res) => {
+    const email = String(req.params.email).toLowerCase();
+    const usuarios = readUsuarios();
+    const restantes = usuarios.filter((u) => u.email !== email);
+
+    if (restantes.length === usuarios.length) {
+        return res.status(404).json({ mensaje: 'Cuenta no encontrada' });
+    }
+
+    writeUsuarios(restantes);
+    cerrarSesionesDe(email);
     res.json({ ok: true });
 });
 

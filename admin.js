@@ -155,7 +155,88 @@ async function loadContent() {
     content = await response.json();
     render();
     showAdmin();
+    await loadUsers();
 }
+
+// ==========================
+// CUENTAS (solicitudes de ingreso con Google)
+// ==========================
+const estadoTexto = { pendiente: 'Pendiente', aprobado: 'Aprobada', rechazado: 'Rechazada' };
+
+function renderUsers(usuarios) {
+    if (!usuarios.length) {
+        $('#users-list').innerHTML = '<p class="hint">Todavía nadie ha solicitado acceso.</p>';
+        return;
+    }
+
+    $('#users-list').innerHTML = usuarios.map((user) => {
+        const email = escapeHtml(user.email);
+        const rolOpciones = ['estudiante', 'profesor'].map((rol) =>
+            `<option value="${rol}" ${user.rol === rol ? 'selected' : ''}>${rol === 'estudiante' ? 'Estudiante' : 'Profesor'}</option>`
+        ).join('');
+
+        return `<div class="item user-item" data-email="${email}">
+            <div class="user-info">
+                <strong>${escapeHtml(user.nombre || user.email)}</strong>
+                <span class="hint">${email}</span>
+                <span class="user-estado estado-${escapeHtml(user.estado)}">${estadoTexto[user.estado] || escapeHtml(user.estado)}</span>
+            </div>
+            <div class="user-actions">
+                <select data-user-rol aria-label="Rol de ${email}">
+                    <option value="" ${user.rol ? '' : 'selected'} disabled>Elegir rol</option>
+                    ${rolOpciones}
+                </select>
+                <button type="button" data-user-action="aprobado">${user.estado === 'aprobado' ? 'Guardar rol' : 'Aprobar'}</button>
+                ${user.estado === 'rechazado' ? '' : '<button type="button" class="secondary" data-user-action="rechazado">Quitar acceso</button>'}
+                <button type="button" class="danger" data-user-action="eliminar">Eliminar</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+async function loadUsers() {
+    const response = await request('/api/admin/usuarios');
+    if (response.status === 401) return handleUnauthorized();
+    if (!response.ok) {
+        $('#users-message').textContent = 'No se pudieron cargar las cuentas.';
+        return;
+    }
+    $('#users-message').textContent = '';
+    renderUsers(await response.json());
+}
+
+$('#refresh-users').addEventListener('click', loadUsers);
+
+$('#users-list').addEventListener('click', async (event) => {
+    const action = event.target.dataset.userAction;
+    if (!action) return;
+
+    const item = event.target.closest('.user-item');
+    const email = encodeURIComponent(item.dataset.email);
+    const rol = item.querySelector('[data-user-rol]').value;
+    let response;
+
+    if (action === 'eliminar') {
+        response = await request(`/api/admin/usuarios/${email}`, { method: 'DELETE' });
+    } else {
+        if (action === 'aprobado' && !rol) {
+            $('#users-message').textContent = 'Elige si es estudiante o profesor antes de aprobar.';
+            return;
+        }
+        response = await request(`/api/admin/usuarios/${email}`, {
+            method: 'PUT',
+            body: JSON.stringify({ estado: action, rol })
+        });
+    }
+
+    if (response.status === 401) return handleUnauthorized();
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        $('#users-message').textContent = result.mensaje || 'No se pudo actualizar la cuenta.';
+        return;
+    }
+    await loadUsers();
+});
 
 $('#login-form').addEventListener('submit', async (event) => {
     event.preventDefault();

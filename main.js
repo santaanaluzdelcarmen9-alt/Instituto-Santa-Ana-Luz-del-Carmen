@@ -82,20 +82,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 <p>${escapeHtml(publicContent.sections?.Actividades || 'informacion')}</p>
 
                 <div id="actividades-login" class="actividades-login">
-                    <div class="actividades-tabs" role="tablist" aria-label="Tipo de cuenta">
-                        <button type="button" class="actividades-tab active" role="tab" aria-selected="true" data-rol="estudiante">Estudiantes</button>
-                        <button type="button" class="actividades-tab" role="tab" aria-selected="false" data-rol="profesor">Profesores</button>
-                    </div>
-
-                    <form id="actividades-form" class="actividades-form">
-                        <h3 id="actividades-titulo">Ingreso de estudiantes</h3>
-                        <label for="actividades-usuario">Usuario</label>
-                        <input id="actividades-usuario" type="text" required autocomplete="username">
-                        <label for="actividades-password">Contraseña</label>
-                        <input id="actividades-password" type="password" required autocomplete="current-password">
-                        <button type="submit" class="actividades-submit">Entrar</button>
+                    <div class="actividades-form">
+                        <h3>Ingreso de estudiantes y profesores</h3>
+                        <p class="actividades-ayuda">Entra con tu cuenta de Google. La primera vez, las directivas deben aprobar tu cuenta.</p>
+                        <div id="actividades-google" class="actividades-google"></div>
                         <p id="actividades-mensaje" class="actividades-mensaje" role="alert"></p>
-                    </form>
+                    </div>
                 </div>
 
                 <div id="actividades-panel" class="actividades-panel" hidden>
@@ -206,95 +198,103 @@ document.addEventListener('DOMContentLoaded', function () {
         return fetch(url, { ...options, headers });
     }
 
+    // El script de Google solo se descarga cuando alguien abre Actividades
+    let googleScript = null;
+    function cargarGoogle() {
+        if (window.google?.accounts?.id) return Promise.resolve();
+        if (!googleScript) {
+            googleScript = new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://accounts.google.com/gsi/client';
+                script.async = true;
+                script.onload = resolve;
+                script.onerror = () => {
+                    googleScript = null;
+                    reject(new Error('No se pudo cargar Google'));
+                };
+                document.head.appendChild(script);
+            });
+        }
+        return googleScript;
+    }
+
     function initActividades() {
         const loginView = document.getElementById('actividades-login');
         const panelView = document.getElementById('actividades-panel');
-        const form = document.getElementById('actividades-form');
-        const titulo = document.getElementById('actividades-titulo');
+        const googleBox = document.getElementById('actividades-google');
         const mensaje = document.getElementById('actividades-mensaje');
         const bienvenida = document.getElementById('actividades-bienvenida');
         const contenido = document.getElementById('actividades-contenido');
         const botonSalir = document.getElementById('actividades-salir');
-        const tabs = document.querySelectorAll('.actividades-tab');
 
-        if (!loginView || !panelView || !form) return;
-
-        let rolActual = 'estudiante';
+        if (!loginView || !panelView || !googleBox) return;
 
         const textos = {
-            estudiante: {
-                titulo: 'Ingreso de estudiantes',
-                contenido: 'Aquí verás las actividades que publiquen tus profesores.'
-            },
-            profesor: {
-                titulo: 'Ingreso de profesores',
-                contenido: 'Aquí podrás publicar y revisar actividades para tus estudiantes.'
-            }
+            estudiante: 'Aquí verás las actividades que publiquen tus profesores.',
+            profesor: 'Aquí podrás publicar y revisar actividades para tus estudiantes.'
         };
 
         function mostrarPanel(cuenta) {
             loginView.hidden = true;
             panelView.hidden = false;
             panelView.dataset.rol = cuenta.rol;
-            bienvenida.textContent = `Hola, ${cuenta.nombre || cuenta.usuario}`;
-            contenido.textContent = textos[cuenta.rol]?.contenido || '';
+            bienvenida.textContent = `Hola, ${cuenta.nombre || cuenta.email}`;
+            contenido.textContent = textos[cuenta.rol] || '';
         }
 
         function mostrarLogin() {
             panelView.hidden = true;
             loginView.hidden = false;
-            form.reset();
             mensaje.textContent = '';
         }
 
-        tabs.forEach((tab) => {
-            tab.addEventListener('click', () => {
-                rolActual = tab.dataset.rol;
-                tabs.forEach((item) => {
-                    const activo = item === tab;
-                    item.classList.toggle('active', activo);
-                    item.setAttribute('aria-selected', String(activo));
-                });
-                titulo.textContent = textos[rolActual].titulo;
-                mensaje.textContent = '';
-                form.reset();
-            });
-        });
-
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const boton = form.querySelector('.actividades-submit');
-            boton.disabled = true;
+        // Google llama a esta función con un token firmado; el servidor lo verifica
+        async function alEntrarConGoogle(respuestaGoogle) {
             mensaje.textContent = '';
-
             try {
-                const response = await actividadesRequest('/api/actividades/login', {
+                const response = await actividadesRequest('/api/actividades/google', {
                     method: 'POST',
-                    body: JSON.stringify({
-                        usuario: document.getElementById('actividades-usuario').value,
-                        password: document.getElementById('actividades-password').value,
-                        rol: rolActual
-                    })
+                    body: JSON.stringify({ credential: respuestaGoogle.credential })
                 });
                 const data = await response.json().catch(() => ({}));
 
                 if (!response.ok) {
-                    mensaje.textContent = response.status === 401
-                        ? 'Usuario o contraseña incorrectos. Revisa también que estés en la pestaña correcta.'
-                        : (data.mensaje || 'No se pudo iniciar sesión.');
+                    mensaje.textContent = data.mensaje || 'No se pudo iniciar sesión.';
                     return;
                 }
 
                 sessionStorage.setItem(ACTIVIDADES_TOKEN_KEY, data.token);
-                form.reset();
                 mostrarPanel(data);
             } catch (error) {
                 console.error('Error al iniciar sesión en Actividades:', error);
                 mensaje.textContent = 'No se pudo conectar con el servidor.';
-            } finally {
-                boton.disabled = false;
             }
-        });
+        }
+
+        async function mostrarBotonGoogle() {
+            try {
+                const config = await fetch('/api/actividades/config').then((r) => r.json());
+                if (!config.googleClientId) {
+                    mensaje.textContent = 'El inicio de sesión con Google aún no está configurado.';
+                    return;
+                }
+                await cargarGoogle();
+                google.accounts.id.initialize({
+                    client_id: config.googleClientId,
+                    callback: alEntrarConGoogle
+                });
+                google.accounts.id.renderButton(googleBox, {
+                    theme: 'outline',
+                    size: 'large',
+                    text: 'continue_with',
+                    shape: 'pill',
+                    locale: 'es'
+                });
+            } catch (error) {
+                console.error('Error al preparar el ingreso con Google:', error);
+                mensaje.textContent = 'No se pudo cargar el ingreso con Google.';
+            }
+        }
 
         botonSalir.addEventListener('click', async () => {
             try {
@@ -303,8 +303,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.warn('No se pudo cerrar sesión en el servidor', error);
             }
             sessionStorage.removeItem(ACTIVIDADES_TOKEN_KEY);
+            window.google?.accounts?.id?.disableAutoSelect();
             mostrarLogin();
         });
+
+        mostrarBotonGoogle();
 
         // Si ya había una sesión iniciada (por ejemplo, al volver a esta sección), se restaura
         if (sessionStorage.getItem(ACTIVIDADES_TOKEN_KEY)) {

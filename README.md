@@ -132,6 +132,29 @@ ADMIN_EMAIL
 ADMIN_PASSWORD
 ```
 
+## Ingreso de estudiantes y profesores (Actividades)
+
+Estudiantes y profesores entran con su cuenta de Google; el sitio no guarda contraseñas.
+
+1. La persona abre **Actividades** y pulsa **Continuar con Google**.
+2. La primera vez su cuenta queda **pendiente** en `data/usuarios.json`.
+3. En `admin.html`, sección **Cuentas**, las directivas eligen si es estudiante o profesor y la aprueban.
+4. Desde ese momento puede entrar. "Quitar acceso" o "Eliminar" cierran sus sesiones abiertas de inmediato.
+
+### Configurar Google (una sola vez)
+
+1. Entra a <https://console.cloud.google.com/> y crea un proyecto (por ejemplo "Santa Ana").
+2. En **APIs y servicios → Pantalla de consentimiento de OAuth**, elige **Externo**, escribe el nombre del instituto y un correo de soporte, y publica la app.
+3. En **APIs y servicios → Credenciales → Crear credenciales → ID de cliente de OAuth**, elige **Aplicación web**.
+4. En **Orígenes autorizados de JavaScript** agrega `http://localhost:3000` y la dirección pública del sitio (por ejemplo `https://santaana.edu.co`).
+5. Copia el **ID de cliente** en el archivo `.env`:
+
+```bash
+GOOGLE_CLIENT_ID=123456789-abc.apps.googleusercontent.com
+```
+
+`data/usuarios.json` está en `.gitignore` para no subir los correos a GitHub.
+
 ## Endpoints principales
 
 ### GET /api/status
@@ -172,6 +195,14 @@ Guarda el contenido editado en el JSON del sitio.
 ### POST /api/admin/upload
 
 Sube imágenes para docentes.
+
+### POST /api/actividades/google
+
+Recibe el token de Google, lo verifica y abre la sesión si la cuenta está aprobada (si es nueva la registra como pendiente).
+
+### GET / PUT / DELETE /api/admin/usuarios
+
+Lista las cuentas, las aprueba con un rol, les quita el acceso o las elimina (solo directivas).
 
 ## Funcionalidades principales
 
