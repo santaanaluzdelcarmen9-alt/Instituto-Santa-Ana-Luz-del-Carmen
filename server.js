@@ -52,27 +52,49 @@ function requireAdmin(req, res, next) {
 // ==========================
 // LOGIN DE ESTUDIANTES Y PROFESORES CON GOOGLE (sección Actividades)
 // ==========================
-// Cada persona entra con su cuenta de Google. La primera vez queda "pendiente"
-// hasta que las directivas la aprueban en admin.html y le asignan un rol.
+// Cada persona entra con su cuenta de Google. Si su correo está en la lista de
+// profesores que manejan las directivas en admin.html es profesor; si no, es estudiante.
+// Las directivas pueden quitarle el acceso a cualquiera desde "Cuentas".
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 const usuariosPath = path.join(__dirname, 'data', 'usuarios.json');
+const profesoresPath = path.join(__dirname, 'data', 'profesores.json');
 const userSessions = new Map(); // token -> { email, nombre, rol, issuedAt }
-const rolesValidos = ['estudiante', 'profesor'];
-const estadosValidos = ['pendiente', 'aprobado', 'rechazado'];
+const estadosValidos = ['aprobado', 'rechazado'];
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function readUsuarios() {
+function readJsonList(filePath) {
     try {
-        const data = JSON.parse(fs.readFileSync(usuariosPath, 'utf8'));
+        const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
         return Array.isArray(data) ? data : [];
     } catch (error) {
         return [];
     }
 }
 
-function writeUsuarios(usuarios) {
-    fs.mkdirSync(path.dirname(usuariosPath), { recursive: true });
-    fs.writeFileSync(usuariosPath, JSON.stringify(usuarios, null, 2));
+function writeJsonList(filePath, list) {
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, JSON.stringify(list, null, 2));
+}
+
+const readUsuarios = () => readJsonList(usuariosPath);
+const writeUsuarios = (usuarios) => writeJsonList(usuariosPath, usuarios);
+const readProfesores = () => readJsonList(profesoresPath);
+const writeProfesores = (profesores) => writeJsonList(profesoresPath, profesores);
+
+function rolDe(email) {
+    return readProfesores().includes(email) ? 'profesor' : 'estudiante';
+}
+
+// actualiza el rol guardado de una cuenta (si ya existe) cuando cambia la lista de profesores
+function actualizarRolDe(email) {
+    const usuarios = readUsuarios();
+    const user = usuarios.find((u) => u.email === email);
+    if (user) {
+        user.rol = rolDe(email);
+        writeUsuarios(usuarios);
+    }
+    cerrarSesionesDe(email);
 }
 
 // cierra todas las sesiones abiertas de un correo (al cambiar su rol o quitarle el acceso)
@@ -124,26 +146,59 @@ app.get('/api/public-content', (req, res) => {
         docentes: Array.isArray(content.docentes) ? content.docentes : [],
         sections: {
             inicio: sections.inicio || {},
-            Actividades: sections.Actividades || 'informacion',
-            conocenos: sections.conocenos || 'informacion',
-            academico: sections.academico || 'informacion',
-            instalaciones: sections.instalaciones || 'informacion',
-            noticias: sections.noticias || 'informacion',
-            contacto: sections.contacto || 'informacion'
+            Actividades: sections.Actividades || '...',
+            conocenos: sections.conocenos || '...',
+            academico: sections.academico || '...',
+            instalaciones: sections.instalaciones || '...',
+            noticias: sections.noticias || '...',
+            contacto: sections.contacto || '...'
         }
     };
     res.json(normalized);
 });
 
+// Las credenciales salen solo de .env (o de las variables del hosting). Sin ellas el panel no abre,
+// para que nunca quede funcionando una contraseña conocida que esté publicada en GitHub.
+const ADMIN_EMAIL = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
+if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+    console.warn('Aviso: faltan ADMIN_EMAIL o ADMIN_PASSWORD en .env; el panel de directivas no permitirá entrar.');
+}
+
+// tras 5 intentos fallidos desde la misma conexión hay que esperar 1 minuto (frena a quien intente adivinar)
+const MAX_INTENTOS = 5;
+const ESPERA_INTENTOS = 60 * 1000;
+const intentosFallidos = new Map(); // ip -> { cuenta, desde }
+
+function mismoTexto(a, b) {
+    const hashA = crypto.createHash('sha256').update(String(a)).digest();
+    const hashB = crypto.createHash('sha256').update(String(b)).digest();
+    return crypto.timingSafeEqual(hashA, hashB);
+}
+
 app.post('/api/admin/login', (req, res) => {
+    if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+        return res.status(503).json({ mensaje: 'El acceso de directivas no está configurado en el servidor' });
+    }
+
+    const ip = req.ip;
+    const intentos = intentosFallidos.get(ip);
+    if (intentos && Date.now() - intentos.desde > ESPERA_INTENTOS) {
+        intentosFallidos.delete(ip);
+    } else if (intentos && intentos.cuenta >= MAX_INTENTOS) {
+        return res.status(429).json({ mensaje: 'Demasiados intentos. Espera un minuto y vuelve a intentarlo.' });
+    }
+
     const email = String(req.body.email || '').trim().toLowerCase();
     const password = String(req.body.password || '');
-    const validEmail = process.env.ADMIN_EMAIL || 'directivas@santaana.edu.co';
-    const validPassword = process.env.ADMIN_PASSWORD || 'SantaAna2026!';
 
-    if (email !== validEmail.toLowerCase() || password !== validPassword) {
+    if (!mismoTexto(email, ADMIN_EMAIL) || !mismoTexto(password, ADMIN_PASSWORD)) {
+        const actual = intentosFallidos.get(ip) || { cuenta: 0, desde: Date.now() };
+        actual.cuenta += 1;
+        intentosFallidos.set(ip, actual);
         return res.status(401).json({ mensaje: 'Correo o contraseña incorrectos' });
     }
+    intentosFallidos.delete(ip);
     const token = crypto.randomBytes(32).toString('hex');
     sessions.set(token, Date.now());
     res.json({ token, email });
@@ -239,24 +294,21 @@ app.post('/api/actividades/google', async (req, res) => {
     let user = usuarios.find((u) => u.email === email);
 
     if (!user) {
-        user = {
-            email,
-            nombre: payload.name || email,
-            foto: payload.picture || '',
-            rol: null,
-            estado: 'pendiente',
-            creado: new Date().toISOString()
-        };
+        user = { email, creado: new Date().toISOString(), estado: 'aprobado' };
         usuarios.push(user);
-        writeUsuarios(usuarios);
     }
 
-    if (user.estado === 'pendiente') {
-        return res.status(403).json({ estado: 'pendiente', mensaje: 'Tu solicitud fue recibida. Las directivas deben aprobar tu cuenta antes de que puedas entrar.' });
-    }
-    if (user.estado !== 'aprobado' || !rolesValidos.includes(user.rol)) {
+    if (user.estado === 'rechazado') {
         return res.status(403).json({ estado: 'rechazado', mensaje: 'Tu cuenta no tiene acceso. Comunícate con las directivas del instituto.' });
     }
+
+    // el rol sale siempre de la lista de profesores, y se refrescan nombre y foto
+    user.estado = 'aprobado';
+    user.rol = rolDe(email);
+    user.nombre = payload.name || user.nombre || email;
+    user.foto = payload.picture || user.foto || '';
+    user.ultimoIngreso = new Date().toISOString();
+    writeUsuarios(usuarios);
 
     const token = crypto.randomBytes(32).toString('hex');
     userSessions.set(token, { email: user.email, nombre: user.nombre, rol: user.rol, issuedAt: Date.now() });
@@ -274,23 +326,60 @@ app.post('/api/actividades/logout', requireUser(), (req, res) => {
 });
 
 //==========================
-//API DE CUENTAS (las directivas aprueban solicitudes y asignan roles)
+//API DE PROFESORES (lista de correos que entran como profesor)
+//==========================
+app.get('/api/admin/profesores', requireAdmin, (req, res) => {
+    res.json(readProfesores());
+});
+
+app.post('/api/admin/profesores', requireAdmin, (req, res) => {
+    const email = String(req.body.email || '').trim().toLowerCase();
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({ mensaje: 'Escribe un correo válido' });
+    }
+
+    const profesores = readProfesores();
+    if (profesores.includes(email)) {
+        return res.status(409).json({ mensaje: 'Ese correo ya está en la lista de profesores' });
+    }
+
+    profesores.push(email);
+    profesores.sort();
+    writeProfesores(profesores);
+    actualizarRolDe(email); // si ya había entrado como estudiante, pasa a profesor de inmediato
+    res.json(profesores);
+});
+
+app.delete('/api/admin/profesores/:email', requireAdmin, (req, res) => {
+    const email = String(req.params.email).toLowerCase();
+    const profesores = readProfesores();
+    const restantes = profesores.filter((p) => p !== email);
+
+    if (restantes.length === profesores.length) {
+        return res.status(404).json({ mensaje: 'Ese correo no está en la lista' });
+    }
+
+    writeProfesores(restantes);
+    actualizarRolDe(email); // vuelve a ser estudiante
+    res.json(restantes);
+});
+
+//==========================
+//API DE CUENTAS (quién ha entrado; las directivas pueden quitar o devolver el acceso)
 //==========================
 app.get('/api/admin/usuarios', requireAdmin, (req, res) => {
-    const usuarios = readUsuarios().sort((a, b) => String(b.creado).localeCompare(String(a.creado)));
+    const usuarios = readUsuarios()
+        .map((u) => ({ ...u, rol: rolDe(u.email) }))
+        .sort((a, b) => String(b.ultimoIngreso || b.creado).localeCompare(String(a.ultimoIngreso || a.creado)));
     res.json(usuarios);
 });
 
 app.put('/api/admin/usuarios/:email', requireAdmin, (req, res) => {
     const email = String(req.params.email).toLowerCase();
     const estado = String(req.body.estado || '');
-    const rol = req.body.rol ? String(req.body.rol) : null;
 
     if (!estadosValidos.includes(estado)) {
         return res.status(400).json({ mensaje: 'Estado inválido' });
-    }
-    if (estado === 'aprobado' && !rolesValidos.includes(rol)) {
-        return res.status(400).json({ mensaje: 'Para aprobar una cuenta hay que elegir un rol' });
     }
 
     const usuarios = readUsuarios();
@@ -300,9 +389,9 @@ app.put('/api/admin/usuarios/:email', requireAdmin, (req, res) => {
     }
 
     user.estado = estado;
-    if (estado === 'aprobado') user.rol = rol;
+    user.rol = rolDe(email);
     writeUsuarios(usuarios);
-    cerrarSesionesDe(email); // así un cambio de rol o un bloqueo aplica de inmediato
+    cerrarSesionesDe(email); // así un bloqueo aplica de inmediato
     res.json(user);
 });
 

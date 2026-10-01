@@ -1,3 +1,5 @@
 node_modules
 .env
 data/usuarios.json
+data/profesores.json
+*.log

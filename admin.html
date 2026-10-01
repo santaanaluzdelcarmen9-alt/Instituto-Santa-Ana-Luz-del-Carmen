@@ -26,8 +26,18 @@
                 <button id="logout-button" class="secondary">Cerrar sesión</button>
             </header>
             <section class="panel">
-                <div class="section-heading"><h2>Cuentas de estudiantes y profesores</h2><button type="button" id="refresh-users" class="secondary">Actualizar</button></div>
-                <p class="hint">Quien entra con Google en Actividades aparece aquí como pendiente. Elige su rol y apruébalo para darle acceso.</p>
+                <h2>Profesores</h2>
+                <p class="hint">Los correos de esta lista entran a Actividades como profesores. Cualquier otro correo que entre con Google es estudiante.</p>
+                <form id="profesor-form" class="profesor-form">
+                    <input id="profesor-email" type="email" required placeholder="correo@ejemplo.com" aria-label="Correo del profesor">
+                    <button type="submit">Agregar profesor</button>
+                </form>
+                <ul id="profesores-list" class="profesores-list"></ul>
+                <p id="profesores-message" class="message"></p>
+            </section>
+            <section class="panel">
+                <div class="section-heading"><h2>Cuentas que han entrado</h2><button type="button" id="refresh-users" class="secondary">Actualizar</button></div>
+                <p class="hint">Todas las personas que han entrado con Google en Actividades. Puedes quitarle el acceso a cualquiera.</p>
                 <div id="users-list"></div>
                 <p id="users-message" class="message"></p>
             </section>

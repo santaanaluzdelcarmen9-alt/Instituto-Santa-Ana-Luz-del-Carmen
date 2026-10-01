@@ -1,4 +1,4 @@
- {
+{
   "name": "instituto-santa-ana-luz-del-carmen",
   "version": "1.0.0",
   "description": "Website for Instituto Santa Ana Luz del Carmen",
@@ -19,10 +19,11 @@
   "author": "Samuel Mateo Yate, Nicolas Camen",
   "license": "MIT",
   "dependencies": {
-    "express": "^5.2.1",
+    "cloudinary": "^2.5.1",
     "dotenv": "^16.4.5",
-    "mongodb": "^6.10.0",
-    "cloudinary": "^2.5.1"
+    "express": "^5.2.1",
+    "google-auth-library": "^11.1.0",
+    "mongodb": "^6.10.0"
   },
   "devDependencies": {
     "live-server": "^1.2.1"

@@ -840,3 +840,45 @@ main {
     color: var(--color-dark);
     font-size: var(--font-lg);
 }
+/* ============================================
+   TEXTOS LARGOS RECORTADOS ("..." + Ver más)
+   ============================================ */
+/* líneas visibles antes de los puntos suspensivos */
+.card p { --lineas: 4; }
+.notice p { --lineas: 3; }
+.section-card > p { --lineas: 6; }
+.instalacion-info p { --lineas: 3; }
+.docente-card__text,
+.grado-card__text { --lineas: 4; }
+
+.recortable:not(.expandido) {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--lineas, 4);
+    line-clamp: var(--lineas, 4);
+    overflow: hidden;
+    overflow-wrap: anywhere;
+}
+
+.ver-mas {
+    display: inline-block;
+    margin: 6px 0 var(--spacing-xs);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-primary);
+    font: inherit;
+    font-size: var(--font-sm);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ver-mas:hover {
+    text-decoration: underline;
+}
+
+.ver-mas:focus-visible {
+    outline: 3px solid rgba(0, 87, 184, .35);
+    outline-offset: 2px;
+    border-radius: 4px;
+}

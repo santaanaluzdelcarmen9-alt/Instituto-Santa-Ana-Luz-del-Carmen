@@ -1,249 +1,175 @@
 # Instituto Santa Ana Luz del Carmen
 
-Sitio institucional del Instituto Santa Ana Luz del Carmen, creado con HTML, CSS, JavaScript y Node.js + Express. El proyecto incluye una landing page pública y un panel de administración para que el personal directivo pueda actualizar contenido sin tocar el código.
+Sitio institucional del Instituto Santa Ana Luz del Carmen, creado con HTML, CSS, JavaScript y Node.js + Express. Incluye la página pública, un panel para que las directivas actualicen el contenido sin tocar el código y una sección de Actividades donde estudiantes y profesores entran con su cuenta de Google.
 
-## Descripción
+## Qué incluye
 
-Este proyecto incluye:
-
-- Página principal con estructura institucional.
-- Navegación por secciones: inicio, conocenos, académico, instalaciones, docentes, noticias, logros, galería y contacto.
-- Sección de Grado Once con carrusel visual.
-- Panel de administración para editar información pública.
-- Gestión de avisos y docentes con orden y fotografía.
-- API Express para leer y guardar contenido JSON.
-- Carga de imágenes desde directorios del proyecto.
+- Página pública con las secciones Inicio, Actividades, Académico, Instalaciones, Docentes, Noticias, Galería, Contacto y Grado Once.
+- Tarjetas de Misión, Visión, Valores y Manual, y avisos en la barra lateral.
+- Carruseles de Docentes, Noticias y Grado Once, y galería de fotos.
+- Textos largos recortados con puntos suspensivos (…) y un botón **Ver más / Ver menos**, para que las tarjetas no se deformen sin importar cuánto se escriba en el panel.
+- Panel de directivas (`admin.html`) para editar textos, avisos, docentes, instalaciones y fotos.
+- Ingreso con Google en Actividades: los correos registrados como profesores entran como profesores y cualquier otro correo entra como estudiante.
 
 ## Estructura del proyecto
 
-```bash
+```text
 instituto-santa-ana-luz-del-carmen/
-├── index.html                # Página principal del sitio
-├── styles.css                # Estilos generales del sitio
-├── main.js                   # Lógica de UI, carruseles y carga de contenido
-├── server.js                 # Backend Express con APIs
-├── package.json              # Scripts y dependencias del proyecto
-├── package-lock.json         # Lockfile de npm
-├── README.md                 # Documentación del proyecto
-├── admin.html                # Panel administrativo
-├── admin.js                  # Lógica del panel de directivas
-├── admin.css                 # Estilos del panel administrativo
+├── index.html              # Página pública
+├── styles.css              # Estilos de la página pública
+├── main.js                 # Secciones, carruseles, recorte de textos y login de Actividades
+├── admin.html              # Panel de directivas
+├── admin.js                # Lógica del panel
+├── admin.css               # Estilos del panel
+├── server.js               # Servidor Express y APIs
+├── package.json            # Scripts y dependencias
+├── .env.example            # Plantilla de configuración (copiar como .env)
 ├── data/
-│   └── site-content.json     # Contenido editable del sitio
-├── fotos-docentes/           # Imágenes de docentes
-├── fotos-galeria/            # Imágenes de la galería
-├── fotos-grado-once/         # Imágenes del Grado Once
-└── .gitignore                # Archivos ignorados por Git
+│   ├── site-content.json   # Contenido editable del sitio
+│   ├── usuarios.json       # Cuentas que han entrado con Google (se crea solo, no se sube a GitHub)
+│   └── profesores.json     # Correos de profesores (se crea solo, no se sube a GitHub)
+├── fotos-docentes/         # Fotos de docentes
+├── fotos-galeria/          # Fotos de la galería
+├── fotos-grado-once/       # Fotos del Grado Once
+├── fotos-instalaciones/    # Fotos de instalaciones
+└── fotos-noticias/         # Imágenes de noticias
 ```
 
-## Tecnologías utilizadas
+## Requisitos
 
-- HTML5
-- CSS3
-- JavaScript
-- Node.js
-- Express
-- npm
+- Node.js 18 o superior (con npm)
 
-## Requisitos previos
-
-Asegúrate de tener instalado:
-
-- Node.js 18 o superior
-- npm
-
-## Instalación
-
-1. Entrar a la carpeta del proyecto.
+## Instalación en un computador nuevo
 
 ```bash
 cd "d:\ruta\al\proyecto\instituto-santa-ana-luz-del-carmen"
-```
-
-2. Instalar dependencias.
-
-```bash
 npm install
 ```
 
-## Ejecución
+Luego crea el archivo `.env` (ver la sección siguiente).
 
-### Arranque normal
+## Configuración (`.env`)
+
+Copia `.env.example` con el nombre `.env` y llena los valores:
+
+```bash
+ADMIN_EMAIL=correo-de-las-directivas@ejemplo.com
+ADMIN_PASSWORD=una-contraseña-larga-y-difícil
+GOOGLE_CLIENT_ID=123456789012-xxxxxxxx.apps.googleusercontent.com
+```
+
+| Variable | Para qué sirve |
+| --- | --- |
+| `ADMIN_EMAIL` | Correo con el que las directivas entran a `admin.html`. |
+| `ADMIN_PASSWORD` | Contraseña del panel. **Es obligatoria**: si falta, el panel no deja entrar a nadie. |
+| `GOOGLE_CLIENT_ID` | ID de cliente de Google para el ingreso en Actividades. |
+| `PORT` | Opcional. Puerto del servidor (por defecto 3000). Los hostings suelen ponerlo solos. |
+
+> **Importante:** `.env` está en `.gitignore` y **nunca** debe subirse a GitHub. Si alguna vez se sube por error, cambia la contraseña de inmediato.
+
+## Ejecutar en local
 
 ```bash
 npm start
 ```
 
-Esto inicia el backend en:
+- Página pública: <http://localhost:3000>
+- Panel de directivas: <http://localhost:3000/admin.html>
 
-```text
-http://localhost:3000
-```
+`npm run start:all` hace lo mismo y además abre las dos páginas en el navegador. El servidor solo funciona mientras la terminal siga abierta.
 
-Y la página principal queda disponible en:
-
-```text
-http://localhost:3000/
-```
-
-### Arranque con apertura automática de la web y el panel
-
-```bash
-npm run start:all
-```
-
-Este comando levanta el servidor y abre la página pública y el panel administrativo en el navegador.
-
-### Frontend solo
-
-```bash
-npm run frontend
-```
-
-Esta opción sirve archivos estáticos pero no reemplaza al backend; para que la administración y la API funcionen, debe estar activo el servidor principal con `npm start`.
+> `npm run frontend` sirve solo los archivos estáticos: el panel, Actividades y las APIs **no** funcionan con esa opción.
 
 ## Panel de directivas
 
-Abre esta URL desde el navegador:
+En `admin.html`, con el correo y la contraseña del `.env`, se puede:
 
-```text
-http://localhost:3000/admin.html
-```
+- Editar la información institucional, misión, visión, valores, manual, académico, actividades y contacto.
+- Editar los avisos, los docentes (orden y foto) y las instalaciones.
+- Manejar la lista de **Profesores** y las **Cuentas que han entrado** (ver abajo).
 
-Desde allí puedes editar:
+Grado Once no se administra desde el panel; sus datos están en `main.js`.
 
-- Información institucional
-- Misión, visión, valores y manual
-- Conócenos, académico, instalaciones, noticias, logros y contacto
-- Avisos
-- Docentes y su orden/fotografía
+Tras 5 intentos fallidos de contraseña hay que esperar un minuto antes de volver a intentarlo.
 
-Se excluye la administración de Grado Once desde este panel.
-
-### Credenciales por defecto
-
-- Correo: directivas@santaana.edu.co
-- Contraseña: SantaAna2026!
-
-Puedes cambiar estas credenciales antes de iniciar el servidor definiendo:
-
-```bash
-ADMIN_EMAIL
-ADMIN_PASSWORD
-```
-
-## Ingreso de estudiantes y profesores (Actividades)
+## Actividades: ingreso de estudiantes y profesores
 
 Estudiantes y profesores entran con su cuenta de Google; el sitio no guarda contraseñas.
 
-1. La persona abre **Actividades** y pulsa **Continuar con Google**.
-2. La primera vez su cuenta queda **pendiente** en `data/usuarios.json`.
-3. En `admin.html`, sección **Cuentas**, las directivas eligen si es estudiante o profesor y la aprueban.
-4. Desde ese momento puede entrar. "Quitar acceso" o "Eliminar" cierran sus sesiones abiertas de inmediato.
+1. La persona abre **Actividades**. Google le ofrece su cuenta ("Continuar como …") o puede pulsar **Continuar con Google**.
+2. Si su correo está en la lista de **Profesores** del panel, entra como profesor; si no, entra como estudiante. No hay que aprobar a nadie.
+3. Si las directivas agregan o quitan un correo de la lista, el rol de esa persona cambia de inmediato.
+4. En **Cuentas que han entrado** se ve quién ha ingresado. **Quitar acceso** o **Eliminar** cierran sus sesiones al instante.
+5. Quien ya entró una vez en ese navegador vuelve a entrar solo. La sesión dura 8 horas.
 
 ### Configurar Google (una sola vez)
 
 1. Entra a <https://console.cloud.google.com/> y crea un proyecto (por ejemplo "Santa Ana").
 2. En **APIs y servicios → Pantalla de consentimiento de OAuth**, elige **Externo**, escribe el nombre del instituto y un correo de soporte, y publica la app.
 3. En **APIs y servicios → Credenciales → Crear credenciales → ID de cliente de OAuth**, elige **Aplicación web**.
-4. En **Orígenes autorizados de JavaScript** agrega `http://localhost:3000` y la dirección pública del sitio (por ejemplo `https://santaana.edu.co`).
-5. Copia el **ID de cliente** en el archivo `.env`:
+4. En **Orígenes autorizados de JavaScript** agrega `http://localhost:3000` y, cuando el sitio esté publicado, su dirección pública (por ejemplo `https://santaana.edu.co`), sin `/` al final.
+5. Copia el **ID de cliente** en `GOOGLE_CLIENT_ID` del `.env`.
+
+Si Google muestra `origin_mismatch` o "no registered origin", falta la dirección del sitio en el paso 4.
+
+## Publicar el sitio en internet
+
+El sitio necesita un hosting que ejecute **Node.js** (por ejemplo Render, Railway o un servidor propio). Un hosting solo de archivos estáticos (GitHub Pages, Netlify sin funciones, Firebase Hosting solo) **no** sirve, porque el panel y Actividades necesitan `server.js`.
+
+Pasos:
+
+1. Sube los cambios a GitHub (ver "Comandos de Git" abajo).
+2. En el hosting, crea un servicio web desde el repositorio con:
+   - Comando de instalación: `npm install`
+   - Comando de inicio: `npm start`
+3. En las **variables de entorno** del hosting agrega `ADMIN_EMAIL`, `ADMIN_PASSWORD` y `GOOGLE_CLIENT_ID` (los mismos del `.env`; el `.env` no viaja con GitHub).
+4. En Google Cloud agrega la dirección pública del sitio a los **Orígenes autorizados de JavaScript**.
+5. Abre `https://tu-sitio/api/status`: debe responder `"estado": "ok"`.
+
+> **Ojo con los datos guardados:** lo que se edita en el panel se guarda en la carpeta `data/` y las fotos subidas en las carpetas `fotos-*`. Muchos hostings gratuitos borran esos archivos cada vez que el servicio se reinicia o se vuelve a publicar. Usa un hosting con **disco persistente** (por ejemplo un "disk" en Render) o haz copia de `data/` y de las fotos antes de cada publicación.
+
+### Lista de revisión antes de publicar
+
+- [ ] `npm install` y `npm start` funcionan sin errores en local.
+- [ ] `ADMIN_PASSWORD` es una contraseña propia, larga y que no aparece en ningún archivo del repositorio.
+- [ ] `git status` **no** muestra `.env`, `data/usuarios.json` ni `data/profesores.json`.
+- [ ] Las variables de entorno están puestas en el hosting.
+- [ ] La dirección pública está en Google Cloud.
+- [ ] Probado: entrar al panel, guardar un cambio, entrar con Google en Actividades.
+
+## APIs
+
+| Método y ruta | Qué hace | Acceso |
+| --- | --- | --- |
+| `GET /api/status` | Estado del servidor. | Público |
+| `GET /api/public-content` | Contenido público (institución, avisos, docentes, secciones). | Público |
+| `GET /api/galeria` · `/api/docentes` · `/api/noticias` | Lista de imágenes de cada carpeta. | Público |
+| `GET /api/instalaciones` | Lista de instalaciones. | Público |
+| `POST /api/admin/login` · `/api/admin/logout` | Entrar y salir del panel. | — |
+| `GET / PUT /api/admin/content` | Leer y guardar el contenido del sitio. | Directivas |
+| `POST /api/admin/upload` | Subir imágenes. | Directivas |
+| `GET / POST / DELETE /api/admin/profesores` | Lista de correos de profesores. | Directivas |
+| `GET / PUT / DELETE /api/admin/usuarios` | Cuentas que han entrado: ver, quitar o devolver acceso, eliminar. | Directivas |
+| `GET /api/actividades/config` | ID de cliente de Google para el botón. | Público |
+| `POST /api/actividades/google` | Verifica el token de Google y abre la sesión con su rol. | — |
+| `GET /api/actividades/me` · `POST /api/actividades/logout` | Sesión actual y salir. | Estudiantes y profesores |
+
+Los archivos de `data/` nunca se sirven al navegador.
+
+## Comandos de Git (Git Bash)
 
 ```bash
-GOOGLE_CLIENT_ID=123456789-abc.apps.googleusercontent.com
-```
-
-`data/usuarios.json` está en `.gitignore` para no subir los correos a GitHub.
-
-## Endpoints principales
-
-### GET /api/status
-
-Retorna el estado del servidor.
-
-```json
-{
-  "estado": "ok",
-  "mensaje": "el backend del Instituto Santa Ana Luz Del Carmen está funcionando"
-}
-```
-
-### GET /api/public-content
-
-Devuelve el contenido público almacenado en JSON, incluyendo institución, avisos, docentes y secciones editables.
-
-### GET /api/galeria
-
-Devuelve la lista de imágenes disponibles en la carpeta `fotos-galeria`.
-
-### GET /api/docentes
-
-Devuelve la lista de imágenes disponibles en la carpeta `fotos-docentes`.
-
-### POST /api/admin/login
-
-Inicia sesión en el panel administrativo.
-
-### GET /api/admin/content
-
-Obtiene el contenido actual del sitio para el panel.
-
-### PUT /api/admin/content
-
-Guarda el contenido editado en el JSON del sitio.
-
-### POST /api/admin/upload
-
-Sube imágenes para docentes.
-
-### POST /api/actividades/google
-
-Recibe el token de Google, lo verifica y abre la sesión si la cuenta está aprobada (si es nueva la registra como pendiente).
-
-### GET / PUT / DELETE /api/admin/usuarios
-
-Lista las cuentas, las aprueba con un rol, les quita el acceso o las elimina (solo directivas).
-
-## Funcionalidades principales
-
-- Diseño institucional moderno y responsivo.
-- Secciones editables desde administración.
-- Carrusel para Grado Once.
-- Carrusel de docentes.
-- Galería de fotos.
-- Panel administrativo funcional para directivas.
-- Backend ligero para pruebas locales y despliegue sencillo.
-
-## Desarrollo
-
-Para continuar trabajando en el proyecto:
-
-```bash
-npm start
-```
-
-Luego abre en el navegador:
-
-```text
-http://localhost:3000
+cd "/d/sml - copia - copia-definitiva/santa ana/instituto-santa-ana-luz-del-carmen"
+git status                          # revisa que no aparezca .env
+git add .
+git commit -m "descripción del cambio"
+git push
 ```
 
 ## Autor
 
-Autor: Samuel Mateo Yate Escobar 
-
-Proyecto desarrollado para el Instituto Santa Ana Luz del Carmen.
+Samuel Mateo Yate Escobar. Proyecto desarrollado para el Instituto Santa Ana Luz del Carmen.
 
 ## Licencia
 
-Este proyecto está bajo la licencia MIT.
-
-## Comandos para Git bash
-
-cd "/d/sml - copia - copia-definitiva/santa ana/instituto-santa-ana-luz-del-carmen"
-
-git add .
-
-git commint -m"texto de el cambio"
-
-git push 
+MIT.

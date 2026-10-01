@@ -232,9 +232,46 @@ button.secondary {
     border-radius:999px
 }
 
-.estado-pendiente { background:#fff4d6; color:#8a5a00 }
-.estado-aprobado { background:var(--mint); color:#1c7c6b }
+.user-badges {
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px
+}
+
+.rol-profesor { background:var(--paper); color:var(--navy) }
+.rol-estudiante { background:var(--mint); color:#1c7c6b }
 .estado-rechazado { background:#fae7e7; color:#9d3030 }
+
+.profesor-form {
+    display:flex;
+    gap:10px;
+    margin:16px 0
+}
+
+.profesor-form input {
+    flex:1;
+    min-width:0
+}
+
+.profesores-list {
+    list-style:none;
+    padding:0;
+    margin:0
+}
+
+.profesores-list li {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:10px 0;
+    border-top:1px solid var(--line);
+    overflow-wrap:anywhere
+}
+
+.profesores-list li:first-child {
+    border-top:0
+}
 
 .user-actions {
     display:flex;
@@ -288,6 +325,9 @@ button.danger {
     }
     .section-heading{
         align-items:flex-start
+    }
+    .profesor-form{
+        flex-direction:column
     }
     .save-bar{
         display:block

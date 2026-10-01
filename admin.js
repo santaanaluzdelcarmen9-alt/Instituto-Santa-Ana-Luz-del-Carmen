@@ -153,41 +153,104 @@ async function loadContent() {
 
     if (!response.ok) throw new Error('No se pudo cargar el contenido');
     content = await response.json();
+
+    // cambios que quedaron pendientes porque la sesión se cerró al guardar
+    const borrador = leerBorrador();
+    if (borrador) {
+        content = borrador;
+        render();
+        showAdmin();
+        await saveContent();
+        return;
+    }
+
     render();
     showAdmin();
+    await loadProfesores();
     await loadUsers();
 }
 
 // ==========================
-// CUENTAS (solicitudes de ingreso con Google)
+// PROFESORES (correos que entran a Actividades como profesor)
 // ==========================
-const estadoTexto = { pendiente: 'Pendiente', aprobado: 'Aprobada', rechazado: 'Rechazada' };
+function renderProfesores(profesores) {
+    $('#profesores-list').innerHTML = profesores.length
+        ? profesores.map((email) => `<li data-email="${escapeHtml(email)}">
+            <span>${escapeHtml(email)}</span>
+            <button type="button" class="danger" data-quitar-profesor>Quitar</button>
+        </li>`).join('')
+        : '<li class="hint">Todavía no hay profesores. Mientras tanto, todos entran como estudiantes.</li>';
+}
+
+async function loadProfesores() {
+    const response = await request('/api/admin/profesores');
+    if (response.status === 401) return handleUnauthorized();
+    if (!response.ok) {
+        $('#profesores-message').textContent = 'No se pudo cargar la lista de profesores.';
+        return;
+    }
+    renderProfesores(await response.json());
+}
+
+// después de cambiar la lista se recargan las cuentas, porque su rol cambia
+async function afterProfesoresChange(response, okMessage) {
+    if (response.status === 401) return handleUnauthorized();
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        $('#profesores-message').textContent = result.mensaje || 'No se pudo actualizar la lista.';
+        return false;
+    }
+    renderProfesores(result);
+    $('#profesores-message').textContent = okMessage;
+    await loadUsers();
+    return true;
+}
+
+$('#profesor-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const email = $('#profesor-email').value.trim().toLowerCase();
+    const response = await request('/api/admin/profesores', { method: 'POST', body: JSON.stringify({ email }) });
+    if (await afterProfesoresChange(response, `${email} ahora es profesor.`)) {
+        $('#profesor-form').reset();
+    }
+});
+
+$('#profesores-list').addEventListener('click', async (event) => {
+    if (!event.target.matches('[data-quitar-profesor]')) return;
+    const email = event.target.closest('li').dataset.email;
+    if (!confirm(`¿Quitar a ${email} de la lista de profesores? Pasará a ser estudiante.`)) return;
+    const response = await request(`/api/admin/profesores/${encodeURIComponent(email)}`, { method: 'DELETE' });
+    await afterProfesoresChange(response, `${email} ahora es estudiante.`);
+});
+
+// ==========================
+// CUENTAS (personas que han entrado con Google)
+// ==========================
+const rolTexto = { profesor: 'Profesor', estudiante: 'Estudiante' };
 
 function renderUsers(usuarios) {
     if (!usuarios.length) {
-        $('#users-list').innerHTML = '<p class="hint">Todavía nadie ha solicitado acceso.</p>';
+        $('#users-list').innerHTML = '<p class="hint">Todavía nadie ha entrado con Google.</p>';
         return;
     }
 
     $('#users-list').innerHTML = usuarios.map((user) => {
         const email = escapeHtml(user.email);
-        const rolOpciones = ['estudiante', 'profesor'].map((rol) =>
-            `<option value="${rol}" ${user.rol === rol ? 'selected' : ''}>${rol === 'estudiante' ? 'Estudiante' : 'Profesor'}</option>`
-        ).join('');
+        const bloqueado = user.estado === 'rechazado';
 
         return `<div class="item user-item" data-email="${email}">
             <div class="user-info">
                 <strong>${escapeHtml(user.nombre || user.email)}</strong>
                 <span class="hint">${email}</span>
-                <span class="user-estado estado-${escapeHtml(user.estado)}">${estadoTexto[user.estado] || escapeHtml(user.estado)}</span>
+                <span class="user-badges">
+                    <span class="user-estado rol-${escapeHtml(user.rol)}">${rolTexto[user.rol] || escapeHtml(user.rol)}</span>
+                    ${bloqueado ? '<span class="user-estado estado-rechazado">Sin acceso</span>' : ''}
+                </span>
             </div>
             <div class="user-actions">
-                <select data-user-rol aria-label="Rol de ${email}">
-                    <option value="" ${user.rol ? '' : 'selected'} disabled>Elegir rol</option>
-                    ${rolOpciones}
-                </select>
-                <button type="button" data-user-action="aprobado">${user.estado === 'aprobado' ? 'Guardar rol' : 'Aprobar'}</button>
-                ${user.estado === 'rechazado' ? '' : '<button type="button" class="secondary" data-user-action="rechazado">Quitar acceso</button>'}
+                ${bloqueado
+                    ? '<button type="button" data-user-action="aprobado">Devolver acceso</button>'
+                    : '<button type="button" class="secondary" data-user-action="rechazado">Quitar acceso</button>'}
                 <button type="button" class="danger" data-user-action="eliminar">Eliminar</button>
             </div>
         </div>`;
@@ -211,23 +274,10 @@ $('#users-list').addEventListener('click', async (event) => {
     const action = event.target.dataset.userAction;
     if (!action) return;
 
-    const item = event.target.closest('.user-item');
-    const email = encodeURIComponent(item.dataset.email);
-    const rol = item.querySelector('[data-user-rol]').value;
-    let response;
-
-    if (action === 'eliminar') {
-        response = await request(`/api/admin/usuarios/${email}`, { method: 'DELETE' });
-    } else {
-        if (action === 'aprobado' && !rol) {
-            $('#users-message').textContent = 'Elige si es estudiante o profesor antes de aprobar.';
-            return;
-        }
-        response = await request(`/api/admin/usuarios/${email}`, {
-            method: 'PUT',
-            body: JSON.stringify({ estado: action, rol })
-        });
-    }
+    const email = encodeURIComponent(event.target.closest('.user-item').dataset.email);
+    const response = action === 'eliminar'
+        ? await request(`/api/admin/usuarios/${email}`, { method: 'DELETE' })
+        : await request(`/api/admin/usuarios/${email}`, { method: 'PUT', body: JSON.stringify({ estado: action }) });
 
     if (response.status === 401) return handleUnauthorized();
     const result = await response.json().catch(() => ({}));
@@ -245,7 +295,9 @@ $('#login-form').addEventListener('submit', async (event) => {
         }) 
 });
 
-    if (!response.ok) { $('#login-message').textContent = 'Correo o contraseña incorrectos.';
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        $('#login-message').textContent = error.mensaje || 'Correo o contraseña incorrectos.';
          return;
     }
 
@@ -254,16 +306,74 @@ $('#login-form').addEventListener('submit', async (event) => {
         await loadContent();
 });
 
-$('#content-form').addEventListener('submit', async (event) => {
-    event.preventDefault(); collect();
-    const response = await request('/api/admin/content', { method: 'PUT', body: JSON.stringify(content) });
-    $('#save-message').textContent = response.ok ? 'Cambios guardados.' : 'No se pudieron guardar los cambios.';
+// ==========================
+// GUARDAR SIN PERDER CAMBIOS
+// ==========================
+// Las sesiones viven en la memoria del servidor: si se reinicia mientras el panel está abierto, el
+// guardado responde 401. En ese caso los cambios se guardan como borrador en este navegador, se pide
+// entrar de nuevo y, al entrar, se guardan solos.
+const draftKey = 'santa-ana-admin-borrador';
+let hayCambios = false;
 
-    if (response.ok) {
-        setTimeout(() => {
-            window.location.reload();
-        }, 300);
+function leerBorrador() {
+    try { return JSON.parse(sessionStorage.getItem(draftKey) || 'null'); } catch (error) { return null; }
+}
+
+function guardarBorrador(data) {
+    try { sessionStorage.setItem(draftKey, JSON.stringify(data)); } catch (error) { /* sin almacenamiento */ }
+}
+
+function borrarBorrador() {
+    try { sessionStorage.removeItem(draftKey); } catch (error) { /* sin almacenamiento */ }
+}
+
+async function saveContent() {
+    $('#save-message').textContent = 'Guardando...';
+    let response;
+    try {
+        response = await request('/api/admin/content', { method: 'PUT', body: JSON.stringify(content) });
+    } catch (error) {
+        $('#save-message').textContent = 'No hay conexión con el servidor. Revisa que esté encendido (npm start) y vuelve a guardar.';
+        return;
     }
+
+    if (response.status === 401) {
+        guardarBorrador(content);
+        hayCambios = false;
+        await handleUnauthorized();
+        $('#login-message').textContent = 'Tu sesión se cerró. Vuelve a entrar: tus cambios no se perdieron y se guardarán solos.';
+        return;
+    }
+
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        $('#save-message').textContent = error.mensaje || 'No se pudieron guardar los cambios.';
+        return;
+    }
+
+    borrarBorrador();
+    hayCambios = false;
+    $('#save-message').textContent = 'Cambios guardados.';
+    setTimeout(() => window.location.reload(), 600);
+}
+
+$('#content-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    collect();
+    await saveContent();
+});
+
+// avisa antes de salir o recargar si hay cambios sin guardar
+['input', 'change'].forEach((tipo) => $('#content-form').addEventListener(tipo, () => { hayCambios = true; }));
+document.addEventListener('click', (event) => {
+    if (event.target.matches('#add-notice, #add-instalacion, #add-teacher, [data-remove-notice], [data-remove-instalacion], [data-remove-teacher]')) {
+        hayCambios = true;
+    }
+});
+window.addEventListener('beforeunload', (event) => {
+    if (!hayCambios) return;
+    event.preventDefault();
+    event.returnValue = '';
 });
 
 $('#add-notice').addEventListener('click', () => { content.notices.push({ title: '', text: '' }); render();

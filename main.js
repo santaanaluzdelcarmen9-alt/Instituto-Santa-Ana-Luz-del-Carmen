@@ -7,12 +7,12 @@ document.addEventListener('DOMContentLoaded', function () {
         notices: [],
         docentes: [],
         sections: {
-            inicio: { mission: 'informacion', vision: 'informacion', values: 'informacion', manual: 'informacion' },
-            Actividades: 'informacion',
-            academico: 'informacion',
-            instalaciones: 'informacion',
-            noticias: 'informacion',
-            contacto: 'informacion'
+            inicio: { mission: '...', vision: '...', values: '...', manual: '...' },
+            Actividades: '...',
+            academico: '...',
+            instalaciones: '...',
+            noticias: '...',
+            contacto: '...'
         }
     };
 
@@ -59,19 +59,19 @@ document.addEventListener('DOMContentLoaded', function () {
             <section class="cards">
                 <div class="card">
                     <h3>Misión</h3>
-                    <p>${escapeHtml(inicio.mission || 'informacion')}</p>
+                    <p>${escapeHtml(inicio.mission || '...')}</p>
                 </div>
                 <div class="card">
                     <h3>Visión</h3>
-                    <p>${escapeHtml(inicio.vision || 'informacion')}</p>
+                    <p>${escapeHtml(inicio.vision || '...')}</p>
                 </div>
                 <div class="card">
                     <h3>Valores</h3>
-                    <p>${escapeHtml(inicio.values || 'informacion')}</p>
+                    <p>${escapeHtml(inicio.values || '...')}</p>
                 </div>
                 <div class="card">
                     <h3>Manual</h3>
-                    <p>${escapeHtml(inicio.manual || 'informacion')}</p>
+                    <p>${escapeHtml(inicio.manual || '...')}</p>
                 </div>
             </section>
         `;
@@ -79,12 +79,12 @@ document.addEventListener('DOMContentLoaded', function () {
         Actividades: () => `
             <section class="section-card actividades-section">
                 <h2>Actividades</h2>
-                <p>${escapeHtml(publicContent.sections?.Actividades || 'informacion')}</p>
+                <p>${escapeHtml(publicContent.sections?.Actividades || '...')}</p>
 
                 <div id="actividades-login" class="actividades-login">
                     <div class="actividades-form">
                         <h3>Ingreso de estudiantes y profesores</h3>
-                        <p class="actividades-ayuda">Entra con tu cuenta de Google. La primera vez, las directivas deben aprobar tu cuenta.</p>
+                        <p class="actividades-ayuda">Entra con tu cuenta de Google. Los profesores registrados por las directivas entran como profesores; los demás, como estudiantes.</p>
                         <div id="actividades-google" class="actividades-google"></div>
                         <p id="actividades-mensaje" class="actividades-mensaje" role="alert"></p>
                     </div>
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function () {
         academico: () => `
             <section class="section-card">
                 <h2>Académico</h2>
-                <p>${escapeHtml(publicContent.sections?.academico || 'informacion')}</p>
+                <p>${escapeHtml(publicContent.sections?.academico || '...')}</p>
             </section>
         `,
         instalaciones: () => `
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function () {
         contacto: () => `
             <section class="section-card">
                 <h2>Contacto</h2>
-                <p>${escapeHtml(publicContent.sections?.contacto || 'informacion')}</p>
+                <p>${escapeHtml(publicContent.sections?.contacto || '...')}</p>
             </section>
         `,
         "grado-once": () => `
@@ -187,8 +187,22 @@ document.addEventListener('DOMContentLoaded', function () {
     // ==========================
     const ACTIVIDADES_TOKEN_KEY = 'santa-ana-actividades-token';
 
+    // La sesión se guarda en localStorage para que siga abierta al cerrar la pestaña
+    // (el servidor la vence a las 8 horas). Si el navegador bloquea el almacenamiento, no se rompe nada.
+    const tokenGuardado = {
+        leer() {
+            try { return localStorage.getItem(ACTIVIDADES_TOKEN_KEY); } catch (error) { return null; }
+        },
+        guardar(token) {
+            try { localStorage.setItem(ACTIVIDADES_TOKEN_KEY, token); } catch (error) { /* sin almacenamiento */ }
+        },
+        borrar() {
+            try { localStorage.removeItem(ACTIVIDADES_TOKEN_KEY); } catch (error) { /* sin almacenamiento */ }
+        }
+    };
+
     function actividadesRequest(url, options = {}) {
-        const token = sessionStorage.getItem(ACTIVIDADES_TOKEN_KEY);
+        const token = tokenGuardado.leer();
         const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
 
         if (token) {
@@ -263,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                 }
 
-                sessionStorage.setItem(ACTIVIDADES_TOKEN_KEY, data.token);
+                tokenGuardado.guardar(data.token);
                 mostrarPanel(data);
             } catch (error) {
                 console.error('Error al iniciar sesión en Actividades:', error);
@@ -271,7 +285,9 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        async function mostrarBotonGoogle() {
+        // ofrecerCuenta: muestra el aviso "Continuar como ..." de Google (One Tap).
+        // Quien ya entró antes en este navegador entra solo, sin hacer clic.
+        async function mostrarBotonGoogle(ofrecerCuenta) {
             try {
                 const config = await fetch('/api/actividades/config').then((r) => r.json());
                 if (!config.googleClientId) {
@@ -281,7 +297,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 await cargarGoogle();
                 google.accounts.id.initialize({
                     client_id: config.googleClientId,
-                    callback: alEntrarConGoogle
+                    callback: alEntrarConGoogle,
+                    auto_select: true,
+                    cancel_on_tap_outside: false,
+                    context: 'signin',
+                    itp_support: true,
+                    use_fedcm_for_prompt: true
                 });
                 google.accounts.id.renderButton(googleBox, {
                     theme: 'outline',
@@ -290,6 +311,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     shape: 'pill',
                     locale: 'es'
                 });
+                if (ofrecerCuenta) google.accounts.id.prompt();
             } catch (error) {
                 console.error('Error al preparar el ingreso con Google:', error);
                 mensaje.textContent = 'No se pudo cargar el ingreso con Google.';
@@ -302,22 +324,27 @@ document.addEventListener('DOMContentLoaded', function () {
             } catch (error) {
                 console.warn('No se pudo cerrar sesión en el servidor', error);
             }
-            sessionStorage.removeItem(ACTIVIDADES_TOKEN_KEY);
+            tokenGuardado.borrar();
+            // evita que Google vuelva a entrar solo justo después de salir
             window.google?.accounts?.id?.disableAutoSelect();
             mostrarLogin();
         });
 
-        mostrarBotonGoogle();
-
-        // Si ya había una sesión iniciada (por ejemplo, al volver a esta sección), se restaura
-        if (sessionStorage.getItem(ACTIVIDADES_TOKEN_KEY)) {
+        // Si ya había una sesión abierta se restaura; si no, Google ofrece la cuenta del navegador
+        if (tokenGuardado.leer()) {
             actividadesRequest('/api/actividades/me')
                 .then((response) => (response.ok ? response.json() : Promise.reject()))
-                .then(mostrarPanel)
+                .then((cuenta) => {
+                    mostrarPanel(cuenta);
+                    mostrarBotonGoogle(false);
+                })
                 .catch(() => {
-                    sessionStorage.removeItem(ACTIVIDADES_TOKEN_KEY);
+                    tokenGuardado.borrar();
                     mostrarLogin();
+                    mostrarBotonGoogle(true);
                 });
+        } else {
+            mostrarBotonGoogle(true);
         }
     }
 
@@ -619,14 +646,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            container.innerHTML = instalaciones.map((inst) => `
+            // imagen gris con el nombre, para cuando la instalación no tiene foto o la foto no carga
+            const imagenVacia = (nombre) => 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%25%22 height=%22100%25%22%3E%3Crect fill=%22%23e6e6e6%22 width=%22100%25%22 height=%22100%25%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2224%22 fill=%22%23999%22 text-anchor=%22middle%22 dy=%22.3em%22%3E' + encodeURIComponent(nombre || '').replace(/'/g, '%27') + '%3C/text%3E%3C/svg%3E';
+
+            container.innerHTML = instalaciones.map((inst) => {
+                const vacia = escapeHtml(imagenVacia(inst.nombre));
+                return `
                 <div class="instalacion-item">
                     <div class="instalacion-imagen">
                         <img
-                            src="${inst.foto ? 'fotos-instalaciones/' + encodeURIComponent(inst.foto) : 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%25%22 height=%22100%25%22%3E%3Crect fill=%22%23e6e6e6%22 width=%22100%25%22 height=%22100%25%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2224%22 fill=%22%23999%22 text-anchor=%22middle%22 dy=%22.3em%22%3E${escapeHtml(inst.nombre)}%3C/text%3E%3C/svg%3E'}"
+                            src="${inst.foto ? 'fotos-instalaciones/' + encodeURIComponent(inst.foto) : vacia}"
                             alt="${escapeHtml(inst.nombre)}"
                             loading="lazy"
-                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%25%22 height=%22100%25%22%3E%3Crect fill=%22%23e6e6e6%22 width=%22100%25%22 height=%22100%25%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2224%22 fill=%22%23999%22 text-anchor=%22middle%22 dy=%22.3em%22%3E${escapeHtml(inst.nombre)}%3C/text%3E%3C/svg%3E'"
+                            onerror="this.onerror=null; this.src='${vacia}'"
                         >
                     </div>
                     <div class="instalacion-info">
@@ -634,7 +666,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         <p>${escapeHtml(inst.descripcion)}</p>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         } catch (error) {
             console.error('Error al cargar las instalaciones:', error);
             container.innerHTML = '<p>No se pudieron cargar las instalaciones.</p>';
@@ -824,6 +857,64 @@ document.addEventListener('DOMContentLoaded', function () {
             setTimeout(initActividades, 0);
         }
     }
+
+    // ==========================
+    // TEXTOS LARGOS: se recortan con "..." y un botón "Ver más"
+    // ==========================
+    // Todos los textos editables desde admin.html. Las líneas visibles de cada uno están en styles.css (--lineas).
+    const SELECTOR_RECORTE = [
+        '.card p',
+        '.notice p',
+        '.section-card > p:not(.actividades-ayuda):not(.actividades-mensaje)',
+        '.instalacion-info p',
+        '.docente-card__text',
+        '.grado-card__text'
+    ].join(', ');
+
+    // el botón solo aparece si el texto de verdad no cabe
+    function revisarRecorte(texto) {
+        texto.classList.add('recortable');
+        const boton = texto.nextElementSibling?.classList.contains('ver-mas') ? texto.nextElementSibling : null;
+        if (texto.classList.contains('expandido')) return;
+
+        const sobra = texto.scrollHeight > texto.clientHeight + 1;
+        if (sobra && !boton) {
+            const nuevo = document.createElement('button');
+            nuevo.type = 'button';
+            nuevo.className = 'ver-mas';
+            nuevo.textContent = 'Ver más';
+            nuevo.setAttribute('aria-expanded', 'false');
+            texto.after(nuevo);
+        } else if (!sobra && boton) {
+            boton.remove();
+        }
+    }
+
+    let recortePendiente = false;
+    function aplicarRecortes() {
+        if (recortePendiente) return;
+        recortePendiente = true;
+        requestAnimationFrame(() => {
+            recortePendiente = false;
+            document.querySelectorAll(SELECTOR_RECORTE).forEach(revisarRecorte);
+        });
+    }
+
+    document.addEventListener('click', (event) => {
+        const boton = event.target.closest('.ver-mas');
+        if (!boton) return;
+        const texto = boton.previousElementSibling;
+        const expandido = texto.classList.toggle('expandido');
+        boton.textContent = expandido ? 'Ver menos' : 'Ver más';
+        boton.setAttribute('aria-expanded', String(expandido));
+    });
+
+    // las secciones, los carruseles y los avisos se pintan después de cargar, así que se vigilan los cambios
+    [contentPanel, document.querySelector('.right')].filter(Boolean).forEach((zona) => {
+        new MutationObserver(aplicarRecortes).observe(zona, { childList: true, subtree: true, characterData: true });
+    });
+    window.addEventListener('resize', aplicarRecortes);
+    window.addEventListener('load', aplicarRecortes);
 
     navLinks.forEach(function (link) {
         link.addEventListener('click', function (event) {
