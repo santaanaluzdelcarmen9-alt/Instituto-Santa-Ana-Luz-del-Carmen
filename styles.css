@@ -57,6 +57,7 @@ body {
     color: #23364d;
     gap: var(--gap-md);
     padding: var(--spacing-sm);
+    zoom: 75%;
 }
 
 /* Cambio a 1 columna en móvil */
@@ -769,8 +770,8 @@ main {
 }
 
 .actividades-login {
-    margin-top: var(--spacing-md);
-    max-width: 460px;
+    margin: var(--spacing-md) auto 0;
+    max-width: 600px;
 }
 
 .actividades-panel {
@@ -778,8 +779,9 @@ main {
 }
 
 .actividades-form {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    place-items: center;
+    text-align: center;
     gap: var(--gap-sm);
     padding: var(--spacing-md);
     background: var(--color-bg-light);
