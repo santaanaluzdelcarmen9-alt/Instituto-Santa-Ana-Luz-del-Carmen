@@ -1,13 +1,11 @@
 {
   "name": "instituto-santa-ana-luz-del-carmen",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Website for Instituto Santa Ana Luz del Carmen",
-  "main": "index.html",
+  "private": true,
   "scripts": {
-    "start": "node server.js",
-    "start:all": "powershell -NoProfile -Command \"$p = Start-Process node -ArgumentList 'server.js' -PassThru; Start-Sleep -Seconds 2; Start-Process 'http://localhost:3000'; Start-Process 'http://localhost:3000/admin.html'; Wait-Process -Id $p.Id\"",
-    "frontend": "live-server",
-    "build": "echo 'Build step not defined'",
+    "start": "firebase serve --only hosting --port 3000",
+    "deploy": "firebase deploy --only hosting,firestore:rules",
     "test": "echo 'No tests defined'"
   },
   "keywords": [
@@ -17,15 +15,5 @@
     "website"
   ],
   "author": "Samuel Mateo Yate, Nicolas Camen",
-  "license": "MIT",
-  "dependencies": {
-    "cloudinary": "^2.5.1",
-    "dotenv": "^16.4.5",
-    "express": "^5.2.1",
-    "google-auth-library": "^11.1.0",
-    "mongodb": "^6.10.0"
-  },
-  "devDependencies": {
-    "live-server": "^1.2.1"
-  }
+  "license": "MIT"
 }
