@@ -46,33 +46,75 @@ instituto-santa-ana-luz-del-carmen/
 5. Agrega en **Directivas** los correos de las demás directivas y en **Profesores** los de los profesores.
 6. Revisa el contenido, llena los **Datos legales del colegio** y pulsa **Guardar cambios**.
 
-## Ejecutar en local
+## Qué se cambia dónde
 
-Requisitos: Node.js 18 o superior y Firebase CLI (`npm install -g firebase-tools`).
+| Quiero cambiar... | Dónde | ¿Hay que publicar? |
+| --- | --- | --- |
+| Textos, avisos, fotos, docentes, instalaciones, galería, noticias, datos legales, profesores o directivas | Panel: <https://santa-ana-web-e9f0f.web.app/admin.html> | **No.** Se ve al instante al pulsar *Guardar cambios*. |
+| Diseño, colores, secciones nuevas, textos legales, **Grado Once** | El código (este proyecto) | **Sí**, con `npm run deploy` (pasos abajo). |
 
-```bash
-firebase login
-npm start
-```
+## Cambiar el código paso a paso
 
-- Página pública: <http://localhost:3000>
-- Panel de directivas: <http://localhost:3000/admin.html>
+### Una sola vez en cada computador
 
-En local se usa la base de datos real de Firebase: lo que guardes en el panel se ve también en el sitio publicado.
+1. Instala [Node.js](https://nodejs.org) (versión 18 o superior).
+2. Instala Firebase CLI y entra con la **cuenta del colegio**:
 
-## Publicar
+   ```bash
+   npm install -g firebase-tools
+   firebase login
+   ```
 
-```bash
-npm run deploy
-```
+   `firebase login` abre el navegador para entrar con Google. Queda guardado en ese computador: no hay que repetirlo cada vez. Para ver con qué cuenta estás: `firebase login:list`.
 
-Publica el sitio en <https://santa-ana-web-e9f0f.web.app> y actualiza los permisos de `firestore.rules`. Los cambios de contenido **no** necesitan publicar: se guardan desde el panel.
+3. Para subir cambios a GitHub, entra también con GitHub CLI (`gh auth login --web`) o con tu usuario de Git.
 
-`firebase.json` deja por fuera los archivos que no deben salir a internet (`.env`, `node_modules`, `data/usuarios.json`, `data/profesores.json` y las carpetas `fotos-galeria` y `fotos-noticias`, que pueden tener fotos de estudiantes sin autorización). Las fotos se publican subiéndolas desde el panel.
+### Cada vez que cambies algo
 
-## Antes de publicar
+1. **Trae la última versión** (por si alguien más cambió algo):
 
-- [ ] Ingreso con Google activado y preset de Cloudinary creado.
+   ```bash
+   git checkout main
+   git pull
+   ```
+
+2. **Haz el cambio** en VS Code (por ejemplo en `styles.css`, `main.js` o `index.html`).
+3. **Pruébalo en tu computador:**
+
+   ```bash
+   npm start
+   ```
+
+   Abre <http://localhost:3000> (página) y <http://localhost:3000/admin.html> (panel). Para apagarlo: `Ctrl + C` en la terminal.
+
+   > Ojo: en local se usa la **base de datos real**. Lo que guardes en el panel mientras pruebas también cambia el sitio publicado.
+
+4. **Publícalo en internet** cuando esté bien:
+
+   ```bash
+   npm run deploy
+   ```
+
+   Sube la página a <https://santa-ana-web-e9f0f.web.app> y actualiza los permisos (`firestore.rules`). Si sale un error tipo `Failed to make request` o `ENOTFOUND`, es la conexión a internet: vuelve a ejecutar el comando.
+
+5. **Guárdalo en GitHub:**
+
+   ```bash
+   git add -A
+   git commit -m "describe aquí qué cambiaste"
+   git push
+   ```
+
+   Antes del `commit`, revisa con `git status` que **no** aparezcan `.env` ni fotos de estudiantes.
+
+### Qué se publica y qué no
+
+`firebase.json` decide qué archivos salen a internet. Deja por fuera los archivos y carpetas ocultos (`.env`, `.git`, `.vscode`...), `node_modules`, `README.md`, `package.json`, `data/usuarios.json`, `data/profesores.json` y las carpetas `fotos-galeria` y `fotos-noticias`, que pueden tener fotos de estudiantes sin autorización. Las fotos nuevas se suben desde el panel, a Cloudinary.
+
+**No quites `"**/.*/**"` de `firebase.json`:** es lo que evita que se publique la carpeta `.git`.
+
+## Antes de publicar contenido nuevo
+
 - [ ] **Datos legales del colegio** llenos en el panel.
 - [ ] Textos legales revisados por las directivas o un asesor jurídico.
 - [ ] Autorización escrita de padres o acudientes para los nombres y fotos de estudiantes (Grado Once y galería).
