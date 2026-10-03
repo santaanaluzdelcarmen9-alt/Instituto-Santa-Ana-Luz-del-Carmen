@@ -21,7 +21,6 @@
       "data/usuarios.json",
       "data/profesores.json",
       "fotos-galeria/**",
-      "fotos-grado-once/**",
       "fotos-noticias/**"
     ],
     "headers": [

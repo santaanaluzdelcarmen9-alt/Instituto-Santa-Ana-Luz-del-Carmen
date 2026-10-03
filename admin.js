@@ -61,18 +61,12 @@ const listas = {
         foto: 'photo',
         carpeta: 'docentes',
         nuevo: () => ({ id: `docente-${Date.now()}`, order: content.docentes.length + 1, name: '', profession: '', info: '', infografia: '', photo: '' })
-    },
-    gradoOnce: {
-        titulo: (i) => `Estudiante ${i + 1}`,
-        campos: [['order', 'Orden', 'number'], ['name', 'Nombre'], ['info', 'Curso'], ['profession', 'Futuro o frase'], ['infografia', 'Descripción', 'textarea']],
-        foto: 'photo',
-        carpeta: 'grado-once',
-        nuevo: () => ({ id: `grado-${Date.now()}`, order: content.gradoOnce.length + 1, name: '', info: 'Curso: 11', profession: '', infografia: '', photo: '' })
     }
 };
+// Grado Once no está aquí a propósito: solo se cambia en el código (main.js).
 
 // misma regla que la página pública (fotoUrl en firebase-init.js) para mostrar la vista previa
-const carpetasViejas = { instalaciones: 'fotos-instalaciones', galeria: 'fotos-galeria', noticias: 'fotos-noticias', docentes: 'fotos-docentes', gradoOnce: 'fotos-grado-once' };
+const carpetasViejas = { instalaciones: 'fotos-instalaciones', galeria: 'fotos-galeria', noticias: 'fotos-noticias', docentes: 'fotos-docentes' };
 
 function campoHtml(lista, index, [campo, etiqueta, tipo], valor) {
     const name = `${lista}.${index}.${campo}`;
@@ -287,7 +281,6 @@ $('#content-form').addEventListener('submit', async (event) => {
     event.preventDefault();
     collect();
     content.docentes.sort((a, b) => a.order - b.order);
-    content.gradoOnce.sort((a, b) => a.order - b.order);
     $('#save-message').textContent = 'Guardando...';
 
     try {

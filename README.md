@@ -6,7 +6,7 @@ Sitio institucional del Instituto Santa Ana Luz del Carmen, hecho con HTML, CSS 
 
 - Página pública con las secciones Inicio, Actividades, Académico, Instalaciones, Docentes, Noticias, Galería, Contacto y Grado Once.
 - Páginas legales: Política de tratamiento de datos personales (Ley 1581 de 2012), Términos y condiciones y Aviso de imágenes y servicios externos.
-- Panel de directivas (`admin.html`) donde se edita **todo**: textos, datos legales, avisos, instalaciones, galería, noticias, docentes, Grado Once, profesores, directivas y cuentas.
+- Panel de directivas (`admin.html`) donde se editan textos, datos legales, avisos, instalaciones, galería, noticias, docentes, profesores, directivas y cuentas. **Grado Once no está en el panel:** solo se cambia en `main.js` (lista `gradoOnceStudents`) y sus fotos van en `fotos-grado-once/`.
 - Fotos subidas desde el panel a **Cloudinary** (se convierten y optimizan solas; también acepta fotos HEIC de iPhone).
 - Lo que se guarda en el panel se ve en la página de inmediato.
 
@@ -68,7 +68,7 @@ npm run deploy
 
 Publica el sitio en <https://santa-ana-web-e9f0f.web.app> y actualiza los permisos de `firestore.rules`. Los cambios de contenido **no** necesitan publicar: se guardan desde el panel.
 
-`firebase.json` deja por fuera los archivos que no deben salir a internet (`.env`, `node_modules`, `data/usuarios.json`, `data/profesores.json` y las carpetas `fotos-galeria`, `fotos-grado-once` y `fotos-noticias`, que pueden tener fotos de estudiantes sin autorización). Las fotos se publican subiéndolas desde el panel.
+`firebase.json` deja por fuera los archivos que no deben salir a internet (`.env`, `node_modules`, `data/usuarios.json`, `data/profesores.json` y las carpetas `fotos-galeria` y `fotos-noticias`, que pueden tener fotos de estudiantes sin autorización). Las fotos se publican subiéndolas desde el panel.
 
 ## Antes de publicar
 
