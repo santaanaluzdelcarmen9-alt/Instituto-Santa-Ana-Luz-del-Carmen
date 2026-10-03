@@ -923,9 +923,20 @@ main {
 }
 
 .legal a,
-.actividades-aviso a,
-.legal-footer a {
+.actividades-aviso a {
     color: var(--color-primary);
+}
+
+/* el pie va sobre el fondo azul oscuro de main, por eso las letras son blancas */
+.legal-footer a {
+    color: #fff;
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 255, 255, .5);
+    text-underline-offset: 3px;
+}
+
+.legal-footer a:hover {
+    text-decoration-color: #fff;
 }
 
 .legal-fecha {
@@ -945,6 +956,6 @@ main {
     gap: var(--gap-sm) var(--gap-md);
     margin-top: var(--spacing-lg);
     padding-top: var(--spacing-md);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid rgba(255, 255, 255, .3);
     font-size: var(--font-xs);
 }
