@@ -4,3 +4,5 @@ data/usuarios.json
 data/profesores.json
 *.log
 .end.txt
+.firebase/
+fotos-galeria/
