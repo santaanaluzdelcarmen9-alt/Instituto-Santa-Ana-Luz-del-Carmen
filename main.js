@@ -38,12 +38,19 @@ document.addEventListener('DOMContentLoaded', function () {
             if (badge) badge.textContent = institution.badge || badge.textContent;
             if (description) description.textContent = institution.description || description.textContent;
 
-            document.querySelectorAll('.right .notice').forEach((notice, index) => {
-                const data = publicContent.notices?.[index];
-                if (!data) return;
-                notice.querySelector('h4').textContent = data.title || '';
-                notice.querySelector('p').textContent = data.text || '';
-            });
+            // los avisos se pintan todos desde el panel: se pueden agregar o quitar sin tocar index.html
+            const avisos = document.querySelector('.right');
+            if (avisos && Array.isArray(publicContent.notices)) {
+                avisos.querySelectorAll('.notice').forEach((notice) => notice.remove());
+                publicContent.notices
+                    .filter((notice) => notice.title || notice.text)
+                    .forEach((data) => {
+                        const notice = document.createElement('div');
+                        notice.className = 'notice';
+                        notice.innerHTML = `<h4>${escapeHtml(data.title || '')}</h4><p>${escapeHtml(data.text || '')}</p>`;
+                        avisos.appendChild(notice);
+                    });
+            }
 
             const sectionName = window.location.hash.substring(1) || 'inicio';
             renderSection(sectionName);
@@ -52,7 +59,134 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // ==========================
+    // DATOS LEGALES DEL COLEGIO
+    // ==========================
+    // Las directivas deben reemplazar lo que está entre [corchetes] antes de publicar el sitio.
+    const datosLegales = {
+        nit: '[NIT del colegio]',
+        direccion: '[Dirección del colegio]',
+        ciudad: '[Ciudad], Colombia',
+        correo: '[correo de contacto de las directivas]',
+        telefono: '[teléfono]',
+        actualizado: '[fecha de la última actualización]'
+    };
+
+    function paginaLegal(titulo, cuerpo) {
+        return `
+            <section class="section-card legal-section">
+                <h2>${titulo}</h2>
+                <div class="legal">${cuerpo}</div>
+            </section>
+        `;
+    }
+
+    function nombreColegio() {
+        return escapeHtml(publicContent.institution?.name || 'Instituto Santa Ana Luz del Carmen');
+    }
+
     const sections = {
+        privacidad: () => paginaLegal('Política de tratamiento de datos personales', `
+            <p class="legal-fecha">Última actualización: ${datosLegales.actualizado}</p>
+
+            <h3>1. Responsable del tratamiento</h3>
+            <p>${nombreColegio()}, NIT ${datosLegales.nit}, con domicilio en ${datosLegales.direccion}, ${datosLegales.ciudad}.
+            Correo: ${datosLegales.correo}. Teléfono: ${datosLegales.telefono}.</p>
+
+            <h3>2. Marco legal</h3>
+            <p>Esta política se expide en cumplimiento de la Ley 1581 de 2012, el Decreto 1377 de 2013 (compilado en el
+            Decreto 1074 de 2015) y la Ley 1098 de 2006 (Código de la Infancia y la Adolescencia).</p>
+
+            <h3>3. Datos que recogemos y para qué</h3>
+            <ul>
+                <li><strong>Ingreso a Actividades con Google:</strong> nombre, correo electrónico, foto de perfil y fecha del último
+                ingreso. Se usan solo para identificar a estudiantes y profesores, darles acceso a la sección y permitir que las
+                directivas administren las cuentas.</li>
+                <li><strong>Panel de directivas:</strong> el correo de acceso de las directivas, para proteger la edición del sitio.</li>
+                <li><strong>Docentes:</strong> nombre, cargo, asignatura y fotografía, publicados con su autorización.</li>
+                <li><strong>Fotografías de actividades y de Grado Once:</strong> publicadas con fines institucionales y de memoria
+                escolar, con la autorización previa de los padres o acudientes cuando aparecen menores de edad.</li>
+            </ul>
+            <p>El sitio no recoge contraseñas de estudiantes ni de profesores, no vende datos y no los usa con fines comerciales.</p>
+
+            <h3>4. Datos de niños, niñas y adolescentes</h3>
+            <p>El tratamiento de datos de menores de edad respeta su interés superior y sus derechos fundamentales. Las imágenes y
+            nombres de estudiantes solo se publican con autorización expresa de sus padres o representantes legales, quienes
+            pueden retirarla en cualquier momento escribiendo a ${datosLegales.correo}.</p>
+
+            <h3>5. Derechos de los titulares</h3>
+            <p>Toda persona puede conocer, actualizar, rectificar y pedir la supresión de sus datos; solicitar prueba de la
+            autorización; ser informada sobre el uso de sus datos; revocar la autorización y presentar quejas ante la
+            Superintendencia de Industria y Comercio.</p>
+
+            <h3>6. Cómo ejercer sus derechos</h3>
+            <p>Escriba a ${datosLegales.correo} indicando su nombre, la solicitud y un medio de respuesta. Las consultas se responden
+            en máximo 10 días hábiles y los reclamos en máximo 15 días hábiles, según los artículos 14 y 15 de la Ley 1581 de 2012.</p>
+
+            <h3>7. Servicios de terceros y transferencia internacional</h3>
+            <p>El ingreso a Actividades usa Google Identity Services y el asistente de chat usa Botpress. Estos proveedores pueden
+            tratar datos en servidores fuera de Colombia bajo sus propias políticas de privacidad. Al usar esas funciones, el
+            usuario lo acepta.</p>
+
+            <h3>8. Seguridad y conservación</h3>
+            <p>Los datos se guardan con medidas razonables de seguridad y solo durante el tiempo necesario para la finalidad
+            descrita. Las directivas pueden eliminar una cuenta en cualquier momento.</p>
+
+            <h3>9. Almacenamiento en el navegador</h3>
+            <p>El sitio guarda en el navegador solo lo necesario para mantener abierta la sesión. No usa cookies de publicidad ni
+            de seguimiento propias.</p>
+        `),
+        terminos: () => paginaLegal('Términos y condiciones de uso', `
+            <p class="legal-fecha">Última actualización: ${datosLegales.actualizado}</p>
+
+            <h3>1. Aceptación</h3>
+            <p>Al navegar este sitio, de ${nombreColegio()}, usted acepta estos términos. Si no está de acuerdo, por favor no lo use.</p>
+
+            <h3>2. Finalidad del sitio</h3>
+            <p>El sitio es informativo y educativo: presenta la institución, sus noticias y actividades, y ofrece a la comunidad
+            educativa una sección de Actividades.</p>
+
+            <h3>3. Cuentas en Actividades</h3>
+            <ul>
+                <li>El ingreso es personal; no comparta su cuenta.</li>
+                <li>Se debe usar con respeto, conforme al Manual de Convivencia del colegio.</li>
+                <li>Las directivas pueden suspender o eliminar el acceso de quien haga mal uso del sitio.</li>
+            </ul>
+
+            <h3>4. Conductas prohibidas</h3>
+            <p>Publicar contenido ofensivo, discriminatorio o que afecte a menores; suplantar a otra persona; intentar acceder sin
+            permiso al panel o a cuentas ajenas, o dañar el sitio. Estas conductas pueden constituir delitos según la Ley 1273 de 2009.</p>
+
+            <h3>5. Propiedad intelectual</h3>
+            <p>Los textos, logotipos, fotografías y diseños son del colegio o de sus autores, protegidos por la Ley 23 de 1982. No se
+            pueden copiar ni usar con fines comerciales sin autorización escrita.</p>
+
+            <h3>6. Responsabilidad</h3>
+            <p>El colegio procura que la información esté actualizada, pero puede contener errores o cambiar sin aviso. No responde
+            por fallas de conexión ni por los servicios de terceros enlazados (Google, Botpress).</p>
+
+            <h3>7. Datos personales</h3>
+            <p>El tratamiento de datos se rige por la <a href="#privacidad" class="legal-link" data-section="privacidad">Política de
+            tratamiento de datos personales</a>.</p>
+
+            <h3>8. Cambios y ley aplicable</h3>
+            <p>El colegio puede modificar estos términos; la versión vigente es la publicada aquí. Se rigen por las leyes de la
+            República de Colombia. Contacto: ${datosLegales.correo}.</p>
+        `),
+        'avisos-legales': () => paginaLegal('Aviso de imágenes y servicios externos', `
+            <h3>Uso de imágenes</h3>
+            <p>Las fotografías de estudiantes, docentes y actividades se publican con fines institucionales y con la autorización
+            correspondiente. Si usted aparece en una foto, o es padre, madre o acudiente de un estudiante que aparece, y desea que
+            se retire, escriba a ${datosLegales.correo} y será retirada en el menor tiempo posible.</p>
+
+            <h3>Servicios externos</h3>
+            <ul>
+                <li><strong>Google:</strong> para ingresar a Actividades. Ver la política de privacidad de Google.</li>
+                <li><strong>Botpress:</strong> el asistente de chat. No escriba en el chat datos sensibles como documentos de
+                identidad, datos de salud o contraseñas.</li>
+                <li><strong>jsDelivr:</strong> sirve los íconos del sitio.</li>
+            </ul>
+        `),
         inicio: () => {
             const inicio = publicContent.sections?.inicio || {};
             return `
@@ -86,6 +220,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         <h3>Ingreso de estudiantes y profesores</h3>
                         <p class="actividades-ayuda">Entra con tu cuenta de Google. Los profesores registrados por las directivas entran como profesores; los demás, como estudiantes.</p>
                         <div id="actividades-google" class="actividades-google"></div>
+                        <p class="actividades-aviso">Al continuar, el colegio guardará tu nombre, correo y foto de Google para darte acceso. Consulta la
+                            <a href="#privacidad" class="legal-link" data-section="privacidad">Política de tratamiento de datos</a> y los
+                            <a href="#terminos" class="legal-link" data-section="terminos">Términos y condiciones</a>.</p>
                         <p id="actividades-mensaje" class="actividades-mensaje" role="alert"></p>
                     </div>
                 </div>
@@ -558,36 +695,39 @@ document.addEventListener('DOMContentLoaded', function () {
     ];
 
     function renderGradoCard(student) {
+        const name = escapeHtml(student.name || '');
         const photo = student.photo
-            ? `<img src="${student.photo}" alt="${student.name}" />`
-            : `<div class="placeholder-photo">${student.name.charAt(0)}</div>`;
+            ? `<img src="${escapeHtml(student.photo)}" alt="${name}" />`
+            : `<div class="placeholder-photo">${escapeHtml((student.name || '').charAt(0))}</div>`;
 
         return `
             <div class="grado-card__inner">
                 <div class="grado-card__photo">${photo}</div>
                 <div class="grado-card__info">
-                    <h3 class="grado-card__name">${student.name}</h3>
-                    <p class="grado-card__text">${student.infografia}</p>
-                    <p class="grado-card__text">${student.info}</p>
-                    <p class="grado-card__text">${student.profession || student.dedicatoria || 'Estudiante del grado once'}</p>
+                    <h3 class="grado-card__name">${name}</h3>
+                    <p class="grado-card__text">${escapeHtml(student.infografia || '')}</p>
+                    <p class="grado-card__text">${escapeHtml(student.info || '')}</p>
+                    <p class="grado-card__text">${escapeHtml(student.profession || student.dedicatoria || 'Estudiante del grado once')}</p>
                 </div>
             </div>
         `;
     }
 
+    // los textos de los docentes vienen del panel, por eso se escapan antes de pintarlos
     function renderDocenteCard(docente) {
+        const name = escapeHtml(docente.name || '');
         const photo = docente.photo
-            ? `<img src="fotos-docentes/${encodeURIComponent(docente.photo)}" alt="${docente.name}" />`
-            : `<div class="placeholder-photo">${docente.name.charAt(0)}</div>`;
+            ? `<img src="fotos-docentes/${encodeURIComponent(docente.photo)}" alt="${name}" />`
+            : `<div class="placeholder-photo">${escapeHtml((docente.name || '').charAt(0))}</div>`;
 
         return `
             <div class="docente-card__inner">
                 <div class="docente-card__photo">${photo}</div>
                 <div class="docente-card__info">
-                    <h3 class="docente-card__name">${docente.name}</h3>
-                    <p class="docente-card__text">${docente.infografia}</p>
-                    <p class="docente-card__text">${docente.info}</p>
-                    <p class="docente-card__text">${docente.profession || 'Docente institucional'}</p>
+                    <h3 class="docente-card__name">${name}</h3>
+                    <p class="docente-card__text">${escapeHtml(docente.infografia || '')}</p>
+                    <p class="docente-card__text">${escapeHtml(docente.info || '')}</p>
+                    <p class="docente-card__text">${escapeHtml(docente.profession || 'Docente institucional')}</p>
                 </div>
             </div>
         `;
@@ -929,6 +1069,18 @@ document.addEventListener('DOMContentLoaded', function () {
             window.location.hash = sectionName;
             renderSection(sectionName);
         });
+    });
+
+    // enlaces legales del pie de página y de Actividades
+    document.addEventListener('click', (event) => {
+        const link = event.target.closest('.legal-link');
+        if (!link) return;
+        event.preventDefault();
+        const sectionName = link.dataset.section;
+        navLinks.forEach((item) => item.classList.remove('active'));
+        window.location.hash = sectionName;
+        renderSection(sectionName);
+        window.scrollTo(0, 0);
     });
 
     const seccionActual = window.location.hash.substring(1) || 'inicio';

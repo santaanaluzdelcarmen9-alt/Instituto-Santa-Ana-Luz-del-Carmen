@@ -252,8 +252,9 @@ app.post('/api/admin/upload', requireAdmin, (req, res) => {
         return res.status(400).json({ mensaje: 'Imagen o carpeta inválida' });
     }
 
-    const safeName = path.basename(fileName).replace(/[^a-zA-Z0-9._-]/g, '_');
-    const finalName = path.extname(safeName) ? safeName : `${safeName}${extension}`;
+    // la extensión sale siempre del tipo de imagen, así nadie puede subir un .html o un .js disfrazado
+    const safeName = path.basename(fileName, path.extname(fileName)).replace(/[^a-zA-Z0-9_-]/g, '_') || 'imagen';
+    const finalName = `${safeName}${extension}`;
     const targetFolder = path.join(__dirname, folder);
         fs.mkdirSync(targetFolder, { recursive: true });
     const base64 = String(data).replace(/^data:[^;]+;base64,/, '');
