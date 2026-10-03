@@ -1,0 +1,59 @@
+rules_version = '2';
+
+// Permisos de la base de datos del sitio. Se publican con: firebase deploy --only firestore:rules
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function conCuenta() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function correo() {
+      return request.auth.token.email.lower();
+    }
+
+    // La cuenta principal del colegio siempre es directiva, para poder entrar la primera vez
+    // y agregar a las demás desde el panel (colección "directivas").
+    function esDirectiva() {
+      return conCuenta() && (
+        correo() == 'santaanaluzdelcarmen9@gmail.com' ||
+        exists(/databases/$(database)/documents/directivas/$(correo()))
+      );
+    }
+
+    // Contenido público del sitio: cualquiera lo lee, solo las directivas lo cambian.
+    match /sitio/contenido {
+      allow read: if true;
+      allow write: if esDirectiva();
+    }
+
+    // Configuración privada del panel (por ejemplo, Cloudinary) y lista de directivas.
+    match /config/{documento} {
+      allow read, write: if esDirectiva();
+    }
+    match /directivas/{email} {
+      allow read, write: if esDirectiva();
+    }
+
+    // Cada persona puede ver si su propio correo es de profesor; la lista completa es de las directivas.
+    match /profesores/{email} {
+      allow get: if conCuenta() && (email == correo() || esDirectiva());
+      allow list, write: if esDirectiva();
+    }
+
+    // Cuentas que entran a Actividades. Cada quien crea y actualiza la suya, pero no puede cambiar
+    // su estado (solo las directivas pueden quitar o devolver el acceso).
+    match /usuarios/{uid} {
+      allow read: if (conCuenta() && request.auth.uid == uid) || esDirectiva();
+      allow create: if conCuenta() && request.auth.uid == uid
+        && request.resource.data.estado == 'aprobado'
+        && request.resource.data.email == correo();
+      allow update: if esDirectiva() || (
+        conCuenta() && request.auth.uid == uid
+        && request.resource.data.estado == resource.data.estado
+        && request.resource.data.email == resource.data.email
+      );
+      allow delete: if esDirectiva();
+    }
+  }
+}

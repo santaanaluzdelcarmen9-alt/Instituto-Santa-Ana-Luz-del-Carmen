@@ -1,26 +1,16 @@
-const tokenKey = 'santa-ana-admin-token';
 let content = null;
+let cloudinary = {};
 const $ = (selector) => document.querySelector(selector);
 const camposLegales = ['nit', 'telefono', 'direccion', 'ciudad', 'correo', 'actualizado'];
 
-function request(url, options = {}) {
-    const token = sessionStorage.getItem(tokenKey);
-    const headers = { ...(options.headers || {}) };
-
-    if (token) {
-        headers.Authorization = `Bearer ${token}`;
-    }
-
-    if (!(options.body instanceof FormData)) {
-        headers['Content-Type'] = 'application/json';
-    }
-
-    return fetch(url, { ...options, headers });
-}
-
-async function handleUnauthorized() {
-    sessionStorage.removeItem(tokenKey);
-    showLogin();
+function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, (character) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    }[character]));
 }
 
 function showAdmin() {
@@ -28,29 +18,106 @@ function showAdmin() {
     $('#admin-view').hidden = false;
 }
 
-function showLogin() {
+function showLogin(texto = '') {
     $('#login-view').hidden = false;
     $('#admin-view').hidden = true;
+    $('#login-message').textContent = texto;
 }
 
-function input(name, value, label, type = 'text') {
-    return `<label>${label}<input name="${name}" type="${type}" value="${escapeHtml(value || '')}"></label>`;
+// ==========================
+// LISTAS EDITABLES (avisos, instalaciones, galería, noticias, docentes, Grado Once)
+// ==========================
+// Cada lista dice qué campos tiene y en qué campo guarda su foto; el panel las pinta y las lee igual.
+const listas = {
+    notices: {
+        titulo: (i) => `Aviso ${i + 1}`,
+        campos: [['title', 'Título'], ['text', 'Texto', 'textarea']],
+        nuevo: () => ({ title: '', text: '' })
+    },
+    instalaciones: {
+        titulo: (i) => `Instalación ${i + 1}`,
+        campos: [['nombre', 'Nombre'], ['descripcion', 'Descripción', 'textarea']],
+        foto: 'foto',
+        carpeta: 'instalaciones',
+        nuevo: () => ({ id: `instalacion-${Date.now()}`, nombre: '', descripcion: '', foto: '' })
+    },
+    galeria: {
+        titulo: (i) => `Foto ${i + 1}`,
+        campos: [['descripcion', 'Descripción (opcional)']],
+        foto: 'url',
+        carpeta: 'galeria',
+        nuevo: () => ({ id: `foto-${Date.now()}`, descripcion: '', url: '' })
+    },
+    noticias: {
+        titulo: (i) => `Noticia ${i + 1}`,
+        campos: [['titulo', 'Título']],
+        foto: 'url',
+        carpeta: 'noticias',
+        nuevo: () => ({ id: `noticia-${Date.now()}`, titulo: '', url: '' })
+    },
+    docentes: {
+        titulo: (i) => `Ficha ${i + 1}`,
+        campos: [['order', 'Orden', 'number'], ['name', 'Nombre'], ['profession', 'Cargo o acompañamiento'], ['info', 'Asignatura'], ['infografia', 'Descripción', 'textarea']],
+        foto: 'photo',
+        carpeta: 'docentes',
+        nuevo: () => ({ id: `docente-${Date.now()}`, order: content.docentes.length + 1, name: '', profession: '', info: '', infografia: '', photo: '' })
+    },
+    gradoOnce: {
+        titulo: (i) => `Estudiante ${i + 1}`,
+        campos: [['order', 'Orden', 'number'], ['name', 'Nombre'], ['info', 'Curso'], ['profession', 'Futuro o frase'], ['infografia', 'Descripción', 'textarea']],
+        foto: 'photo',
+        carpeta: 'grado-once',
+        nuevo: () => ({ id: `grado-${Date.now()}`, order: content.gradoOnce.length + 1, name: '', info: 'Curso: 11', profession: '', infografia: '', photo: '' })
+    }
+};
+
+// misma regla que la página pública (fotoUrl en firebase-init.js) para mostrar la vista previa
+const carpetasViejas = { instalaciones: 'fotos-instalaciones', galeria: 'fotos-galeria', noticias: 'fotos-noticias', docentes: 'fotos-docentes', gradoOnce: 'fotos-grado-once' };
+
+function campoHtml(lista, index, [campo, etiqueta, tipo], valor) {
+    const name = `${lista}.${index}.${campo}`;
+    const texto = escapeHtml(valor ?? '');
+    if (tipo === 'textarea') {
+        return `<label class="wide">${etiqueta}<textarea name="${name}" rows="3">${texto}</textarea></label>`;
+    }
+    return `<label>${etiqueta}<input name="${name}" type="${tipo || 'text'}" value="${texto}"></label>`;
 }
 
-function escapeHtml(value) {
-    return String(value).replace(/[&<>"']/g, (character) => ({ 
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-     }[character]
-    ));
+function renderLista(lista) {
+    const config = listas[lista];
+    const items = content[lista];
+    const contenedor = document.querySelector(`[data-lista="${lista}"]`);
+
+    if (!items.length) {
+        contenedor.innerHTML = '<p class="hint">Todavía no hay elementos.</p>';
+        return;
+    }
+
+    contenedor.innerHTML = items.map((item, index) => {
+        const foto = config.foto ? fotoUrl(item[config.foto], carpetasViejas[lista]) : '';
+        const bloqueFoto = config.foto ? `
+            <div class="foto-campo">
+                ${foto ? `<img class="foto-preview" src="${escapeHtml(foto)}" alt="">` : '<div class="foto-preview foto-vacia">Sin foto</div>'}
+                <label class="file-picker">
+                    <input type="file" accept="image/*,.heic" data-subir="${lista}" data-index="${index}">
+                    <span class="file-button">${foto ? 'Cambiar foto' : 'Subir foto'}</span>
+                </label>
+                <input type="hidden" name="${lista}.${index}.${config.foto}" value="${escapeHtml(item[config.foto] || '')}">
+            </div>` : '';
+
+        return `<div class="item" data-index="${index}">
+            <h3>${config.titulo(index)}</h3>
+            ${bloqueFoto}
+            <div class="form-grid">${config.campos.map((campo) => campoHtml(lista, index, campo, item[campo[0]])).join('')}</div>
+            <button type="button" class="remove" data-quitar="${lista}" data-index="${index}">Eliminar</button>
+        </div>`;
+    }).join('');
 }
 
 function render() {
     const sections = content.sections || {};
     const inicio = sections.inicio || {};
+    const legal = content.legal || {};
 
     $('[name="institution.name"]').value = content.institution.name || '';
     $('[name="institution.badge"]').value = content.institution.badge || '';
@@ -61,45 +128,13 @@ function render() {
     $('[name="section.inicio.manual"]').value = inicio.manual || '';
     $('[name="section.Actividades"]').value = sections.Actividades || '';
     $('[name="section.academico"]').value = sections.academico || '';
-    $('[name="section.instalaciones"]').value = sections.instalaciones || '';
-    $('[name="section.noticias"]').value = sections.noticias || '';
     $('[name="section.contacto"]').value = sections.contacto || '';
-
-    const legal = content.legal || {};
     camposLegales.forEach((campo) => { $(`[name="legal.${campo}"]`).value = legal[campo] || ''; });
 
-    $('#notices-list').innerHTML = content.notices.map((notice, index) => `<div class="item notice-item" data-index="${index}">
-      ${input(`notice.${index}.title`,notice.title, 'Título')}
-        ${input(`notice.${index}.text`, notice.text, 'Texto')}
-            <button type="button" class="remove" data-remove-notice="
-        ${index}">Eliminar</button></div>`
-    ).join('');
-
-    $('#instalaciones-list').innerHTML = (content.instalaciones || []).map((inst, index) => `<div class="item instalacion-item" data-index="${index}">
-      <h3>Instalación ${index + 1}</h3>
-      ${input(`instalacion.${index}.nombre`, inst.nombre, 'Nombre')}
-        ${input(`instalacion.${index}.descripcion`, inst.descripcion, 'Descripción')}
-        ${input(`instalacion.${index}.foto`, inst.foto, 'Archivo de foto')}
-      <label class="photo-upload">Subir una foto<span class="file-picker"><input type="file" accept="image/jpeg,image/png,image/webp,image/gif" data-photo-inst="${index}"><span class="file-button">Elegir foto</span><span class="file-name">${inst.foto ? escapeHtml(inst.foto) : 'Ningún archivo seleccionado'}</span></span>
-        </label><button type="button" class="remove" data-remove-instalacion="${index}">Eliminar</button></div>`
-    ).join('');
-
-    $('#teachers-list').innerHTML = content.docentes.map((teacher, index) => 
-        `<div class="item teacher-item" data-index="
-        ${index}"><h3>Ficha ${index + 1}
-            </h3><div class="item-grid">
-        ${input(`teacher.${index}.order`, teacher.order, 'Orden', 'number')}
-        ${input(`teacher.${index}.name`, teacher.name, 'Nombre')}
-        ${input(`teacher.${index}.profession`, teacher.profession, 'Cargo o acompañamiento')}
-        ${input(`teacher.${index}.infografia`, teacher.infografia, 'Descripción')}
-        ${input(`teacher.${index}.info`, teacher.info, 'Asignatura')}
-        ${input(`teacher.${index}.photo`, teacher.photo, 'Archivo de foto')}
-        </div><label class="photo-upload">Subir una foto<span class="file-picker"><input type="file" accept="image/jpeg,image/png,image/webp,image/gif" data-photo="${index}"><span class="file-button">Elegir foto</span><span class="file-name">${teacher.photo ? escapeHtml(teacher.photo) : 'Ningún archivo seleccionado'}</span></span>
-        </label><button type="button" class="remove" data-remove-teacher="${index}
-        ">Eliminar</button></div>`
-    ).join('');
+    Object.keys(listas).forEach(renderLista);
 }
 
+// pasa lo escrito en el formulario a `content` (se llama antes de agregar, quitar o subir, para no perder lo escrito)
 function collect() {
     const sections = content.sections || {};
     const inicio = sections.inicio || {};
@@ -114,165 +149,273 @@ function collect() {
     sections.inicio = inicio;
     sections.Actividades = $('[name="section.Actividades"]').value;
     sections.academico = $('[name="section.academico"]').value;
-    sections.instalaciones = $('[name="section.instalaciones"]').value;
-    sections.noticias = $('[name="section.noticias"]').value;
     sections.contacto = $('[name="section.contacto"]').value;
     content.sections = sections;
 
     content.legal = {};
     camposLegales.forEach((campo) => { content.legal[campo] = $(`[name="legal.${campo}"]`).value.trim(); });
 
-    document.querySelectorAll('.notice-item').forEach((element, index) => 
-        { content.notices
-            [index].title = element.querySelector(`[name="notice.${index}.title"]`)
-          .value; content.notices
-            [index].text = element.querySelector(`[name="notice.${index}.text"]`)
-            .value; 
-});
-
-    document.querySelectorAll('.instalacion-item').forEach((element, index) => { 
-        const inst = content.instalaciones[index];
-        inst.nombre = element.querySelector(`[name="instalacion.${index}.nombre"]`).value;
-        inst.descripcion = element.querySelector(`[name="instalacion.${index}.descripcion"]`).value;
-        inst.foto = element.querySelector(`[name="instalacion.${index}.foto"]`).value;
+    Object.entries(listas).forEach(([lista, config]) => {
+        content[lista].forEach((item, index) => {
+            const campos = config.foto ? [...config.campos, [config.foto]] : config.campos;
+            campos.forEach(([campo, , tipo]) => {
+                const input = document.querySelector(`[name="${lista}.${index}.${campo}"]`);
+                if (!input) return;
+                item[campo] = tipo === 'number' ? (Number(input.value) || index + 1) : input.value;
+            });
+        });
     });
+}
 
-    document.querySelectorAll('.teacher-item').forEach((element, index) => { const teacher = content.docentes[index];
-        teacher.order = Number(element.querySelector(`[name="teacher.${index}.order"]`).value) || 
-        index + 1; teacher.name = element.querySelector(`[name="teacher.${index}.name"]`).value;
-        teacher.profession = element.querySelector(`[name="teacher.${index}.profession"]`).value;
-        teacher.infografia = element.querySelector(`[name="teacher.${index}.infografia"]`).value; 
-        teacher.info = element.querySelector(`[name="teacher.${index}.info"]`).value; 
-        teacher.photo = element.querySelector(`[name="teacher.${index}.photo"]`).value; 
-    });
-
-
-    content.docentes.sort((a, b) => a.order - b.order);
+function normalizar(datos) {
+    const lista = (valor) => (Array.isArray(valor) ? valor : []);
+    const resultado = { ...datos, institution: datos.institution || {}, sections: datos.sections || {}, legal: datos.legal || {} };
+    Object.keys(listas).forEach((nombre) => { resultado[nombre] = lista(datos[nombre]); });
+    return resultado;
 }
 
 async function loadContent() {
-    const response = await request('/api/admin/content');
+    const snap = await contenidoDoc.get();
+    let datos = snap.data();
+    $('#contenido-inicial').hidden = snap.exists;
 
-    if (response.status === 401) {
-        await handleUnauthorized();
-        return;
+    // la primera vez no hay nada en Firestore: se parte del contenido que venía en el proyecto
+    if (!snap.exists) {
+        const response = await fetch('data/site-content.json');
+        datos = response.ok ? await response.json() : {};
     }
 
-    if (!response.ok) throw new Error('No se pudo cargar el contenido');
-    content = await response.json();
-
-    // cambios que quedaron pendientes porque la sesión se cerró al guardar
-    const borrador = leerBorrador();
-    if (borrador) {
-        content = borrador;
-        render();
-        showAdmin();
-        await saveContent();
-        return;
-    }
-
+    content = normalizar(datos || {});
     render();
-    showAdmin();
-    await loadProfesores();
-    await loadUsers();
 }
 
 // ==========================
-// PROFESORES (correos que entran a Actividades como profesor)
+// FOTOS (Cloudinary)
 // ==========================
-function renderProfesores(profesores) {
-    $('#profesores-list').innerHTML = profesores.length
-        ? profesores.map((email) => `<li data-email="${escapeHtml(email)}">
-            <span>${escapeHtml(email)}</span>
-            <button type="button" class="danger" data-quitar-profesor>Quitar</button>
-        </li>`).join('')
-        : '<li class="hint">Todavía no hay profesores. Mientras tanto, todos entran como estudiantes.</li>';
+async function loadCloudinary() {
+    const snap = await db.collection('config').doc('cloudinary').get();
+    cloudinary = snap.data() || {};
+    $('#cloudinary-form [name="cloudName"]').value = cloudinary.cloudName || '';
+    $('#cloudinary-form [name="preset"]').value = cloudinary.preset || '';
 }
 
-async function loadProfesores() {
-    const response = await request('/api/admin/profesores');
-    if (response.status === 401) return handleUnauthorized();
-    if (!response.ok) {
-        $('#profesores-message').textContent = 'No se pudo cargar la lista de profesores.';
-        return;
-    }
-    renderProfesores(await response.json());
-}
-
-// después de cambiar la lista se recargan las cuentas, porque su rol cambia
-async function afterProfesoresChange(response, okMessage) {
-    if (response.status === 401) return handleUnauthorized();
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) {
-        $('#profesores-message').textContent = result.mensaje || 'No se pudo actualizar la lista.';
-        return false;
-    }
-    renderProfesores(result);
-    $('#profesores-message').textContent = okMessage;
-    await loadUsers();
-    return true;
-}
-
-$('#profesor-form').addEventListener('submit', async (event) => {
+$('#cloudinary-form').addEventListener('submit', async (event) => {
     event.preventDefault();
-    const email = $('#profesor-email').value.trim().toLowerCase();
-    const response = await request('/api/admin/profesores', { method: 'POST', body: JSON.stringify({ email }) });
-    if (await afterProfesoresChange(response, `${email} ahora es profesor.`)) {
-        $('#profesor-form').reset();
+    const datos = {
+        cloudName: event.target.cloudName.value.trim(),
+        preset: event.target.preset.value.trim()
+    };
+    try {
+        await db.collection('config').doc('cloudinary').set(datos);
+        cloudinary = datos;
+        $('#cloudinary-message').textContent = 'Configuración guardada. Ya puedes subir fotos.';
+    } catch (error) {
+        console.error(error);
+        $('#cloudinary-message').textContent = 'No se pudo guardar la configuración.';
     }
 });
 
-$('#profesores-list').addEventListener('click', async (event) => {
-    if (!event.target.matches('[data-quitar-profesor]')) return;
-    const email = event.target.closest('li').dataset.email;
-    if (!confirm(`¿Quitar a ${email} de la lista de profesores? Pasará a ser estudiante.`)) return;
-    const response = await request(`/api/admin/profesores/${encodeURIComponent(email)}`, { method: 'DELETE' });
-    await afterProfesoresChange(response, `${email} ahora es estudiante.`);
+// sube una imagen a Cloudinary y devuelve una dirección que la entrega optimizada (y convierte HEIC a JPG/WebP)
+async function subirFoto(archivo, carpeta) {
+    if (!cloudinary.cloudName || !cloudinary.preset) {
+        throw new Error('Primero llena y guarda la "Configuración de fotos (Cloudinary)".');
+    }
+    const form = new FormData();
+    form.append('file', archivo);
+    form.append('upload_preset', cloudinary.preset);
+    form.append('folder', `santa-ana/${carpeta}`);
+
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudinary.cloudName)}/image/upload`, { method: 'POST', body: form });
+    const resultado = await response.json().catch(() => ({}));
+    if (!response.ok || !resultado.secure_url) {
+        throw new Error(resultado.error?.message || 'Cloudinary no aceptó la foto.');
+    }
+    return resultado.secure_url.replace('/upload/', '/upload/f_auto,q_auto,c_limit,w_1600/');
+}
+
+document.addEventListener('change', async (event) => {
+    const unaFoto = event.target.dataset.subir;
+    const varias = event.target.dataset.subirVarias;
+    const lista = unaFoto || varias;
+    const archivos = [...(event.target.files || [])];
+    if (!lista || !archivos.length) return;
+
+    collect();
+    const config = listas[lista];
+    $('#save-message').textContent = `Subiendo ${archivos.length === 1 ? 'la foto' : `${archivos.length} fotos`}...`;
+
+    try {
+        for (const archivo of archivos) {
+            const url = await subirFoto(archivo, config.carpeta);
+            if (unaFoto) {
+                content[lista][Number(event.target.dataset.index)][config.foto] = url;
+            } else {
+                content[lista].push({ ...config.nuevo(), [config.foto]: url });
+            }
+        }
+        hayCambios = true;
+        renderLista(lista);
+        $('#save-message').textContent = 'Foto lista. Pulsa "Guardar cambios" para publicarla.';
+    } catch (error) {
+        console.error('Error al subir la foto:', error);
+        $('#save-message').textContent = error.message;
+    }
+    event.target.value = '';
 });
 
 // ==========================
-// CUENTAS (personas que han entrado con Google)
+// AGREGAR Y QUITAR ELEMENTOS DE LAS LISTAS
+// ==========================
+document.addEventListener('click', (event) => {
+    const agregar = event.target.dataset.agregar;
+    const quitar = event.target.dataset.quitar;
+    if (!agregar && !quitar) return;
+
+    collect();
+    if (agregar) content[agregar].push(listas[agregar].nuevo());
+    if (quitar) content[quitar].splice(Number(event.target.dataset.index), 1);
+    hayCambios = true;
+    renderLista(agregar || quitar);
+});
+
+// ==========================
+// GUARDAR
+// ==========================
+let hayCambios = false;
+
+$('#content-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    collect();
+    content.docentes.sort((a, b) => a.order - b.order);
+    content.gradoOnce.sort((a, b) => a.order - b.order);
+    $('#save-message').textContent = 'Guardando...';
+
+    try {
+        await contenidoDoc.set(content);
+        hayCambios = false;
+        $('#contenido-inicial').hidden = true;
+        render();
+        $('#save-message').textContent = 'Cambios guardados. Ya se ven en la página.';
+    } catch (error) {
+        console.error('Error al guardar:', error);
+        $('#save-message').textContent = error.code === 'permission-denied'
+            ? 'Tu cuenta ya no tiene permiso para guardar. Vuelve a entrar.'
+            : 'No se pudieron guardar los cambios. Revisa tu conexión y vuelve a intentarlo.';
+    }
+});
+
+// avisa antes de salir o recargar si hay cambios sin guardar
+['input', 'change'].forEach((tipo) => $('#content-form').addEventListener(tipo, () => { hayCambios = true; }));
+window.addEventListener('beforeunload', (event) => {
+    if (!hayCambios) return;
+    event.preventDefault();
+    event.returnValue = '';
+});
+
+// ==========================
+// DIRECTIVAS Y PROFESORES (listas de correos)
+// ==========================
+async function loadCorreos(coleccion) {
+    const lista = $(`#${coleccion}-list`);
+    try {
+        const snap = await db.collection(coleccion).get();
+        const correos = snap.docs.map((doc) => doc.id).sort();
+        lista.innerHTML = correos.length
+            ? correos.map((email) => `<li data-email="${escapeHtml(email)}">
+                <span>${escapeHtml(email)}</span>
+                <button type="button" class="danger" data-quitar-correo="${coleccion}">Quitar</button>
+            </li>`).join('')
+            : `<li class="hint">La lista está vacía.</li>`;
+        return correos;
+    } catch (error) {
+        console.error(error);
+        $(`#${coleccion}-message`).textContent = 'No se pudo cargar la lista.';
+        return [];
+    }
+}
+
+document.querySelectorAll('[data-lista-correos]').forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const coleccion = form.dataset.listaCorreos;
+        const input = form.querySelector('input');
+        const email = input.value.trim().toLowerCase();
+        try {
+            await db.collection(coleccion).doc(email).set({ agregado: firebase.firestore.FieldValue.serverTimestamp() });
+            form.reset();
+            $(`#${coleccion}-message`).textContent = `${email} quedó en la lista.`;
+            await loadCorreos(coleccion);
+            if (coleccion === 'profesores') await loadUsers();
+        } catch (error) {
+            console.error(error);
+            $(`#${coleccion}-message`).textContent = 'No se pudo agregar el correo.';
+        }
+    });
+});
+
+document.addEventListener('click', async (event) => {
+    const coleccion = event.target.dataset.quitarCorreo;
+    if (!coleccion) return;
+    const email = event.target.closest('li').dataset.email;
+    if (!confirm(`¿Quitar a ${email} de la lista?`)) return;
+    try {
+        await db.collection(coleccion).doc(email).delete();
+        $(`#${coleccion}-message`).textContent = `${email} salió de la lista.`;
+        await loadCorreos(coleccion);
+        if (coleccion === 'profesores') await loadUsers();
+    } catch (error) {
+        console.error(error);
+        $(`#${coleccion}-message`).textContent = 'No se pudo quitar el correo.';
+    }
+});
+
+// ==========================
+// CUENTAS (personas que han entrado con Google en Actividades)
 // ==========================
 const rolTexto = { profesor: 'Profesor', estudiante: 'Estudiante' };
 
-function renderUsers(usuarios) {
-    if (!usuarios.length) {
-        $('#users-list').innerHTML = '<p class="hint">Todavía nadie ha entrado con Google.</p>';
-        return;
-    }
-
-    $('#users-list').innerHTML = usuarios.map((user) => {
-        const email = escapeHtml(user.email);
-        const bloqueado = user.estado === 'rechazado';
-
-        return `<div class="item user-item" data-email="${email}">
-            <div class="user-info">
-                <strong>${escapeHtml(user.nombre || user.email)}</strong>
-                <span class="hint">${email}</span>
-                <span class="user-badges">
-                    <span class="user-estado rol-${escapeHtml(user.rol)}">${rolTexto[user.rol] || escapeHtml(user.rol)}</span>
-                    ${bloqueado ? '<span class="user-estado estado-rechazado">Sin acceso</span>' : ''}
-                </span>
-            </div>
-            <div class="user-actions">
-                ${bloqueado
-                    ? '<button type="button" data-user-action="aprobado">Devolver acceso</button>'
-                    : '<button type="button" class="secondary" data-user-action="rechazado">Quitar acceso</button>'}
-                <button type="button" class="danger" data-user-action="eliminar">Eliminar</button>
-            </div>
-        </div>`;
-    }).join('');
-}
-
 async function loadUsers() {
-    const response = await request('/api/admin/usuarios');
-    if (response.status === 401) return handleUnauthorized();
-    if (!response.ok) {
+    try {
+        const [usuariosSnap, profesoresSnap] = await Promise.all([
+            db.collection('usuarios').get(),
+            db.collection('profesores').get()
+        ]);
+        const profesores = new Set(profesoresSnap.docs.map((doc) => doc.id));
+        const momento = (fecha) => (fecha?.toMillis ? fecha.toMillis() : 0);
+        const usuarios = usuariosSnap.docs
+            .map((doc) => ({ uid: doc.id, ...doc.data() }))
+            .map((user) => ({ ...user, rol: profesores.has(user.email) ? 'profesor' : 'estudiante' }))
+            .sort((a, b) => momento(b.ultimoIngreso) - momento(a.ultimoIngreso));
+
+        $('#users-message').textContent = '';
+        if (!usuarios.length) {
+            $('#users-list').innerHTML = '<p class="hint">Todavía nadie ha entrado con Google.</p>';
+            return;
+        }
+
+        $('#users-list').innerHTML = usuarios.map((user) => {
+            const bloqueado = user.estado === 'rechazado';
+            return `<div class="item user-item" data-uid="${escapeHtml(user.uid)}">
+                <div class="user-info">
+                    <strong>${escapeHtml(user.nombre || user.email)}</strong>
+                    <span class="hint">${escapeHtml(user.email)}</span>
+                    <span class="user-badges">
+                        <span class="user-estado rol-${user.rol}">${rolTexto[user.rol]}</span>
+                        ${bloqueado ? '<span class="user-estado estado-rechazado">Sin acceso</span>' : ''}
+                    </span>
+                </div>
+                <div class="user-actions">
+                    ${bloqueado
+                        ? '<button type="button" data-user-action="aprobado">Devolver acceso</button>'
+                        : '<button type="button" class="secondary" data-user-action="rechazado">Quitar acceso</button>'}
+                    <button type="button" class="danger" data-user-action="eliminar">Eliminar</button>
+                </div>
+            </div>`;
+        }).join('');
+    } catch (error) {
+        console.error(error);
         $('#users-message').textContent = 'No se pudieron cargar las cuentas.';
-        return;
     }
-    $('#users-message').textContent = '';
-    renderUsers(await response.json());
 }
 
 $('#refresh-users').addEventListener('click', loadUsers);
@@ -280,222 +423,60 @@ $('#refresh-users').addEventListener('click', loadUsers);
 $('#users-list').addEventListener('click', async (event) => {
     const action = event.target.dataset.userAction;
     if (!action) return;
-
-    const email = encodeURIComponent(event.target.closest('.user-item').dataset.email);
-    const response = action === 'eliminar'
-        ? await request(`/api/admin/usuarios/${email}`, { method: 'DELETE' })
-        : await request(`/api/admin/usuarios/${email}`, { method: 'PUT', body: JSON.stringify({ estado: action }) });
-
-    if (response.status === 401) return handleUnauthorized();
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) {
-        $('#users-message').textContent = result.mensaje || 'No se pudo actualizar la cuenta.';
-        return;
+    const ref = db.collection('usuarios').doc(event.target.closest('.user-item').dataset.uid);
+    try {
+        if (action === 'eliminar') {
+            if (!confirm('¿Eliminar esta cuenta de la lista? Si vuelve a entrar con Google, aparecerá de nuevo.')) return;
+            await ref.delete();
+        } else {
+            await ref.update({ estado: action });
+        }
+        await loadUsers();
+    } catch (error) {
+        console.error(error);
+        $('#users-message').textContent = 'No se pudo actualizar la cuenta.';
     }
-    await loadUsers();
-});
-
-$('#login-form').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const response = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({ email: $('#email').value, password: $('#password').value 
-        }) 
-});
-
-    if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        $('#login-message').textContent = error.mensaje || 'Correo o contraseña incorrectos.';
-         return;
-    }
-
-    const result = await response.json();
-        sessionStorage.setItem(tokenKey, result.token);
-        await loadContent();
 });
 
 // ==========================
-// GUARDAR SIN PERDER CAMBIOS
+// ENTRAR Y SALIR
 // ==========================
-// Las sesiones viven en la memoria del servidor: si se reinicia mientras el panel está abierto, el
-// guardado responde 401. En ese caso los cambios se guardan como borrador en este navegador, se pide
-// entrar de nuevo y, al entrar, se guardan solos.
-const draftKey = 'santa-ana-admin-borrador';
-let hayCambios = false;
-
-function leerBorrador() {
-    try { return JSON.parse(sessionStorage.getItem(draftKey) || 'null'); } catch (error) { return null; }
-}
-
-function guardarBorrador(data) {
-    try { sessionStorage.setItem(draftKey, JSON.stringify(data)); } catch (error) { /* sin almacenamiento */ }
-}
-
-function borrarBorrador() {
-    try { sessionStorage.removeItem(draftKey); } catch (error) { /* sin almacenamiento */ }
-}
-
-async function saveContent() {
-    $('#save-message').textContent = 'Guardando...';
-    let response;
+$('#login-button').addEventListener('click', async () => {
+    $('#login-message').textContent = '';
     try {
-        response = await request('/api/admin/content', { method: 'PUT', body: JSON.stringify(content) });
+        await entrarConGoogle();
     } catch (error) {
-        $('#save-message').textContent = 'No hay conexión con el servidor. Revisa que esté encendido (npm start) y vuelve a guardar.';
-        return;
-    }
-
-    if (response.status === 401) {
-        guardarBorrador(content);
-        hayCambios = false;
-        await handleUnauthorized();
-        $('#login-message').textContent = 'Tu sesión se cerró. Vuelve a entrar: tus cambios no se perdieron y se guardarán solos.';
-        return;
-    }
-
-    if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        $('#save-message').textContent = error.mensaje || 'No se pudieron guardar los cambios.';
-        return;
-    }
-
-    borrarBorrador();
-    hayCambios = false;
-    $('#save-message').textContent = 'Cambios guardados.';
-    setTimeout(() => window.location.reload(), 600);
-}
-
-$('#content-form').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    collect();
-    await saveContent();
-});
-
-// avisa antes de salir o recargar si hay cambios sin guardar
-['input', 'change'].forEach((tipo) => $('#content-form').addEventListener(tipo, () => { hayCambios = true; }));
-document.addEventListener('click', (event) => {
-    if (event.target.matches('#add-notice, #add-instalacion, #add-teacher, [data-remove-notice], [data-remove-instalacion], [data-remove-teacher]')) {
-        hayCambios = true;
-    }
-});
-window.addEventListener('beforeunload', (event) => {
-    if (!hayCambios) return;
-    event.preventDefault();
-    event.returnValue = '';
-});
-
-$('#add-notice').addEventListener('click', () => { content.notices.push({ title: '', text: '' }); render();
-});
-
-$('#add-instalacion').addEventListener('click', () => { 
-    if (!content.instalaciones) content.instalaciones = [];
-    content.instalaciones.push({ 
-        id: `instalacion-${Date.now()}`,
-        nombre: '', 
-        descripcion: '' 
-    }); 
-    render();
-});
-
-$('#add-teacher').addEventListener('click', () => {
-     content.docentes.push({ id: `docente-${Date.now()}`,
-    order: content.docentes.length + 1,
-    name: '',
-    photo: '',
-    infografia: '',
-    info: '',
-    profession: '' 
-});
-
-render();
-});
-
-document.addEventListener(
-    'click', (event) => { 
-        const notice = event.target.dataset.removeNotice; 
-        const instalacion = event.target.dataset.removeInstalacion;
-        const teacher = event.target.dataset.removeTeacher;
-        if (notice !== undefined) 
-            { content.notices.splice(Number(notice), 1);
-            render(); 
+        if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
+            console.error(error);
+            $('#login-message').textContent = 'No se pudo entrar con Google. Inténtalo de nuevo.';
         }
-        if (instalacion !== undefined) 
-            { content.instalaciones.splice(Number(instalacion), 1);
-            render(); 
-        }
-        if (teacher !== undefined) 
-            { content.docentes.splice(Number(teacher), 1);
-            render(); 
-        }
-});
-
-document.addEventListener('change', async (event) => { 
-    const photoIndex = event.target.dataset.photo;
-    const photoInstIndex = event.target.dataset.photoInst;
-
-    if (photoIndex === undefined && photoInstIndex === undefined || !event.target.files[0]) return;
-
-    const file = event.target.files[0];
-    event.target.closest('.file-picker').querySelector('.file-name').textContent = file.name;
-    const data = await new Promise((resolve, reject) => { 
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject; 
-        reader.readAsDataURL(file); 
-    });
-
-    // Upload para docentes
-    if (photoIndex !== undefined) {
-        const response = await request('/api/admin/upload',
-            { method: 'POST', body: JSON.stringify({ 
-                fileName: `${content.docentes[photoIndex].order}-${content.docentes[photoIndex].name || 'docente'}-${Date.now()}`, 
-                type: file.type, 
-                data, 
-                folder: 'fotos-docentes' 
-            }) 
-        });
-
-        if (response.ok) { 
-            const result = await response.json();
-            content.docentes[photoIndex].photo = result.fileName; 
-            render(); 
-        } 
-    }
-
-    // Upload para instalaciones
-    if (photoInstIndex !== undefined) {
-        const response = await request('/api/admin/upload',
-            { method: 'POST', body: JSON.stringify({ 
-                fileName: `${content.instalaciones[photoInstIndex].nombre}-${Date.now()}`, 
-                type: file.type, 
-                data, 
-                folder: 'fotos-instalaciones' 
-            }) 
-        });
-
-        if (response.ok) { 
-            const result = await response.json();
-            content.instalaciones[photoInstIndex].foto = result.fileName; 
-            render(); 
-        } 
     }
 });
 
-$('#logout-button').addEventListener('click', async () => {
-    try {
-        await request('/api/admin/logout', { method: 'POST' });
-    } catch (error) {
-        console.warn('No se pudo cerrar sesión en el servidor', error);
-    }
+$('#logout-button').addEventListener('click', () => auth.signOut());
 
-    sessionStorage.removeItem(tokenKey);
-    showLogin();
-});
-
-if (sessionStorage.getItem(tokenKey)) {
-    loadContent().catch(() => {
-        sessionStorage.removeItem(tokenKey);
+// Solo las directivas pueden leer la lista de directivas (lo deciden las reglas de Firestore),
+// así que si esa lectura falla, la cuenta no es directiva.
+auth.onAuthStateChanged(async (user) => {
+    if (!user) {
         showLogin();
-    });
-} else {
-    showLogin();
-}
+        return;
+    }
+    try {
+        await db.collection('directivas').limit(1).get();
+    } catch (error) {
+        await auth.signOut();
+        showLogin(`La cuenta ${user.email} no es directiva. Pide a una directiva que la agregue en el panel.`);
+        return;
+    }
+
+    try {
+        $('#admin-email').textContent = user.email;
+        await loadContent();
+        showAdmin();
+        await Promise.all([loadCloudinary(), loadCorreos('directivas'), loadCorreos('profesores'), loadUsers()]);
+    } catch (error) {
+        console.error('Error al cargar el panel:', error);
+        showLogin('No se pudo cargar el panel. Revisa tu conexión y vuelve a intentarlo.');
+    }
+});

@@ -6,6 +6,11 @@ document.addEventListener('DOMContentLoaded', function () {
         institution: {},
         notices: [],
         docentes: [],
+        instalaciones: [],
+        galeria: [],
+        noticias: [],
+        gradoOnce: [],
+        legal: {},
         sections: {
             inicio: { mission: '...', vision: '...', values: '...', manual: '...' },
             Actividades: '...',
@@ -23,12 +28,35 @@ document.addEventListener('DOMContentLoaded', function () {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
 
+    // las secciones con fotos esperan a que llegue el contenido (mientras tanto dicen "Cargando...")
+    let contenidoCargado = false;
+
+    // Lee el contenido que guardan las directivas en Firestore. Mientras nadie haya guardado desde el panel,
+    // se usa el contenido inicial de data/site-content.json.
+    async function leerContenido() {
+        const snap = await contenidoDoc.get();
+        if (snap.exists) return snap.data();
+        const response = await fetch('data/site-content.json');
+        if (!response.ok) throw new Error('No se pudo cargar el contenido inicial');
+        return response.json();
+    }
+
     async function loadPublicContent() {
         try {
-            const response = await fetch('/api/public-content');
-            if (!response.ok) throw new Error('No se pudo cargar el contenido público');
-
-            publicContent = await response.json();
+            const datos = await leerContenido();
+            const lista = (valor) => (Array.isArray(valor) ? valor : []);
+            publicContent = {
+                ...publicContent,
+                ...datos,
+                notices: lista(datos.notices),
+                docentes: lista(datos.docentes).slice().sort((a, b) => (a.order || 0) - (b.order || 0)),
+                instalaciones: lista(datos.instalaciones),
+                galeria: lista(datos.galeria),
+                noticias: lista(datos.noticias),
+                gradoOnce: lista(datos.gradoOnce),
+                sections: { ...publicContent.sections, ...(datos.sections || {}) }
+            };
+            contenidoCargado = true;
             const institution = publicContent.institution || {};
             const title = document.querySelector('.page-header__title');
             const badge = document.querySelector('.page-header__badge');
@@ -137,9 +165,10 @@ document.addEventListener('DOMContentLoaded', function () {
             en máximo 10 días hábiles y los reclamos en máximo 15 días hábiles, según los artículos 14 y 15 de la Ley 1581 de 2012.</p>
 
             <h3>7. Servicios de terceros y transferencia internacional</h3>
-            <p>El ingreso a Actividades usa Google Identity Services y el asistente de chat usa Botpress. Estos proveedores pueden
-            tratar datos en servidores fuera de Colombia bajo sus propias políticas de privacidad. Al usar esas funciones, el
-            usuario lo acepta.</p>
+            <p>El sitio se aloja en Google Firebase, que también guarda las cuentas de Actividades y permite el ingreso con Google;
+            las fotografías se guardan en Cloudinary, y el asistente de chat usa Botpress. Estos proveedores pueden tratar datos
+            en servidores fuera de Colombia (principalmente en Estados Unidos) bajo sus propias políticas de privacidad. Al usar
+            esas funciones, el usuario lo acepta.</p>
 
             <h3>8. Seguridad y conservación</h3>
             <p>Los datos se guardan con medidas razonables de seguridad y solo durante el tiempo necesario para la finalidad
@@ -176,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             <h3>6. Responsabilidad</h3>
             <p>El colegio procura que la información esté actualizada, pero puede contener errores o cambiar sin aviso. No responde
-            por fallas de conexión ni por los servicios de terceros enlazados (Google, Botpress).</p>
+            por fallas de conexión ni por los servicios de terceros enlazados (Google, Cloudinary, Botpress).</p>
 
             <h3>7. Datos personales</h3>
             <p>El tratamiento de datos se rige por la <a href="#privacidad" class="legal-link" data-section="privacidad">Política de
@@ -198,7 +227,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             <h3>Servicios externos</h3>
             <ul>
-                <li><strong>Google:</strong> para ingresar a Actividades. Ver la política de privacidad de Google.</li>
+                <li><strong>Google Firebase:</strong> aloja el sitio, guarda su contenido y las cuentas de Actividades, y permite
+                ingresar con Google. Ver la política de privacidad de Google.</li>
+                <li><strong>Cloudinary:</strong> guarda y muestra las fotografías del sitio.</li>
                 <li><strong>Botpress:</strong> el asistente de chat. No escriba en el chat datos sensibles como documentos de
                 identidad, datos de salud o contraseñas.</li>
                 <li><strong>jsDelivr:</strong> sirve los íconos del sitio.</li>
@@ -236,7 +267,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <div class="actividades-form">
                         <h3>Ingreso de estudiantes y profesores</h3>
                         <p class="actividades-ayuda">Entra con tu cuenta de Google. Los profesores registrados por las directivas entran como profesores; los demás, como estudiantes.</p>
-                        <div id="actividades-google" class="actividades-google"></div>
+                        <button type="button" id="actividades-google" class="actividades-google-btn"><i class="bi bi-google"></i> Continuar con Google</button>
                         <p class="actividades-aviso">Al continuar, el colegio guardará tu nombre, correo y foto de Google para darte acceso. Consulta la
                             <a href="#privacidad" class="legal-link" data-section="privacidad">Política de tratamiento de datos</a> y los
                             <a href="#terminos" class="legal-link" data-section="terminos">Términos y condiciones</a>.</p>
@@ -336,385 +367,109 @@ document.addEventListener('DOMContentLoaded', function () {
         `
     };
 
-// ==========================
-    // ACTIVIDADES: login de estudiantes y profesores
     // ==========================
-    const ACTIVIDADES_TOKEN_KEY = 'santa-ana-actividades-token';
-
-    // La sesión se guarda en localStorage para que siga abierta al cerrar la pestaña
-    // (el servidor la vence a las 8 horas). Si el navegador bloquea el almacenamiento, no se rompe nada.
-    const tokenGuardado = {
-        leer() {
-            try { return localStorage.getItem(ACTIVIDADES_TOKEN_KEY); } catch (error) { return null; }
-        },
-        guardar(token) {
-            try { localStorage.setItem(ACTIVIDADES_TOKEN_KEY, token); } catch (error) { /* sin almacenamiento */ }
-        },
-        borrar() {
-            try { localStorage.removeItem(ACTIVIDADES_TOKEN_KEY); } catch (error) { /* sin almacenamiento */ }
-        }
+    // ACTIVIDADES: ingreso de estudiantes y profesores con Google (Firebase Authentication)
+    // ==========================
+    // Firebase recuerda la sesión en este navegador. Si el correo está en la lista de profesores del panel
+    // es profesor; si no, estudiante. Las directivas pueden quitarle el acceso a cualquiera desde el panel.
+    const textosActividades = {
+        estudiante: 'Aquí verás las actividades que publiquen tus profesores.',
+        profesor: 'Aquí podrás publicar y revisar actividades para tus estudiantes.'
     };
 
-    function actividadesRequest(url, options = {}) {
-        const token = tokenGuardado.leer();
-        const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+    // guarda (o actualiza) la cuenta en Firestore y devuelve su rol, o null si las directivas le quitaron el acceso
+    async function registrarCuenta(user) {
+        const email = String(user.email || '').toLowerCase();
+        const ref = db.collection('usuarios').doc(user.uid);
+        const snap = await ref.get();
 
-        if (token) {
-            headers.Authorization = `Bearer ${token}`;
+        if (snap.exists && snap.data().estado === 'rechazado') return null;
+
+        const datos = {
+            email,
+            nombre: user.displayName || email,
+            foto: user.photoURL || '',
+            ultimoIngreso: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        if (!snap.exists) {
+            datos.estado = 'aprobado';
+            datos.creado = firebase.firestore.FieldValue.serverTimestamp();
         }
+        await ref.set(datos, { merge: true });
 
-        return fetch(url, { ...options, headers });
+        const profesor = await db.collection('profesores').doc(email).get();
+        return profesor.exists ? 'profesor' : 'estudiante';
     }
 
-    // El script de Google solo se descarga cuando alguien abre Actividades
-    let googleScript = null;
-    function cargarGoogle() {
-        if (window.google?.accounts?.id) return Promise.resolve();
-        if (!googleScript) {
-            googleScript = new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = 'https://accounts.google.com/gsi/client';
-                script.async = true;
-                script.onload = resolve;
-                script.onerror = () => {
-                    googleScript = null;
-                    reject(new Error('No se pudo cargar Google'));
-                };
-                document.head.appendChild(script);
-            });
-        }
-        return googleScript;
-    }
+    let dejarDeEscucharSesion = null;
 
     function initActividades() {
         const loginView = document.getElementById('actividades-login');
         const panelView = document.getElementById('actividades-panel');
-        const googleBox = document.getElementById('actividades-google');
+        const botonGoogle = document.getElementById('actividades-google');
         const mensaje = document.getElementById('actividades-mensaje');
         const bienvenida = document.getElementById('actividades-bienvenida');
         const contenido = document.getElementById('actividades-contenido');
         const botonSalir = document.getElementById('actividades-salir');
 
-        if (!loginView || !panelView || !googleBox) return;
+        if (!loginView || !panelView || !botonGoogle) return;
 
-        const textos = {
-            estudiante: 'Aquí verás las actividades que publiquen tus profesores.',
-            profesor: 'Aquí podrás publicar y revisar actividades para tus estudiantes.'
-        };
-
-        function mostrarPanel(cuenta) {
+        function mostrarPanel(user, rol) {
             loginView.hidden = true;
             panelView.hidden = false;
-            panelView.dataset.rol = cuenta.rol;
-            bienvenida.textContent = `Hola, ${cuenta.nombre || cuenta.email}`;
-            contenido.textContent = textos[cuenta.rol] || '';
+            panelView.dataset.rol = rol;
+            bienvenida.textContent = `Hola, ${user.displayName || user.email}`;
+            contenido.textContent = textosActividades[rol] || '';
         }
 
-        function mostrarLogin() {
+        function mostrarLogin(texto = '') {
             panelView.hidden = true;
             loginView.hidden = false;
+            mensaje.textContent = texto;
+        }
+
+        botonGoogle.addEventListener('click', async () => {
             mensaje.textContent = '';
-        }
-
-        // Google llama a esta función con un token firmado; el servidor lo verifica
-        async function alEntrarConGoogle(respuestaGoogle) {
-            mensaje.textContent = '';
             try {
-                const response = await actividadesRequest('/api/actividades/google', {
-                    method: 'POST',
-                    body: JSON.stringify({ credential: respuestaGoogle.credential })
-                });
-                const data = await response.json().catch(() => ({}));
-
-                if (!response.ok) {
-                    mensaje.textContent = data.mensaje || 'No se pudo iniciar sesión.';
-                    return;
+                await entrarConGoogle();
+            } catch (error) {
+                if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
+                    console.error('Error al iniciar sesión en Actividades:', error);
+                    mensaje.textContent = 'No se pudo iniciar sesión con Google. Inténtalo de nuevo.';
                 }
-
-                tokenGuardado.guardar(data.token);
-                mostrarPanel(data);
-            } catch (error) {
-                console.error('Error al iniciar sesión en Actividades:', error);
-                mensaje.textContent = 'No se pudo conectar con el servidor.';
             }
-        }
-
-        // ofrecerCuenta: muestra el aviso "Continuar como ..." de Google (One Tap).
-        // Quien ya entró antes en este navegador entra solo, sin hacer clic.
-        async function mostrarBotonGoogle(ofrecerCuenta) {
-            try {
-                const config = await fetch('/api/actividades/config').then((r) => r.json());
-                if (!config.googleClientId) {
-                    mensaje.textContent = 'El inicio de sesión con Google aún no está configurado.';
-                    return;
-                }
-                await cargarGoogle();
-                google.accounts.id.initialize({
-                    client_id: config.googleClientId,
-                    callback: alEntrarConGoogle,
-                    auto_select: true,
-                    cancel_on_tap_outside: false,
-                    context: 'signin',
-                    itp_support: true,
-                    use_fedcm_for_prompt: true
-                });
-                google.accounts.id.renderButton(googleBox, {
-                    theme: 'outline',
-                    size: 'large',
-                    text: 'continue_with',
-                    shape: 'pill',
-                    locale: 'es'
-                });
-                if (ofrecerCuenta) google.accounts.id.prompt();
-            } catch (error) {
-                console.error('Error al preparar el ingreso con Google:', error);
-                mensaje.textContent = 'No se pudo cargar el ingreso con Google.';
-            }
-        }
-
-        botonSalir.addEventListener('click', async () => {
-            try {
-                await actividadesRequest('/api/actividades/logout', { method: 'POST' });
-            } catch (error) {
-                console.warn('No se pudo cerrar sesión en el servidor', error);
-            }
-            tokenGuardado.borrar();
-            // evita que Google vuelva a entrar solo justo después de salir
-            window.google?.accounts?.id?.disableAutoSelect();
-            mostrarLogin();
         });
 
-        // Si ya había una sesión abierta se restaura; si no, Google ofrece la cuenta del navegador
-        if (tokenGuardado.leer()) {
-            actividadesRequest('/api/actividades/me')
-                .then((response) => (response.ok ? response.json() : Promise.reject()))
-                .then((cuenta) => {
-                    mostrarPanel(cuenta);
-                    mostrarBotonGoogle(false);
-                })
-                .catch(() => {
-                    tokenGuardado.borrar();
-                    mostrarLogin();
-                    mostrarBotonGoogle(true);
-                });
-        } else {
-            mostrarBotonGoogle(true);
-        }
+        botonSalir.addEventListener('click', () => auth.signOut());
+
+        // cada vez que se abre Actividades se vuelve a escuchar la sesión (la sección se pinta de nuevo)
+        if (dejarDeEscucharSesion) dejarDeEscucharSesion();
+        dejarDeEscucharSesion = auth.onAuthStateChanged(async (user) => {
+            if (!document.body.contains(loginView)) return;
+            if (!user) {
+                mostrarLogin();
+                return;
+            }
+            try {
+                const rol = await registrarCuenta(user);
+                if (!rol) {
+                    await auth.signOut();
+                    mostrarLogin('Tu cuenta no tiene acceso. Comunícate con las directivas del instituto.');
+                    return;
+                }
+                mostrarPanel(user, rol);
+            } catch (error) {
+                console.error('Error al revisar la cuenta:', error);
+                mostrarLogin('No se pudo revisar tu cuenta. Inténtalo de nuevo.');
+            }
+        });
     }
-
-
-    const gradoOnceStudents = [
-        {
-            name: 'Dagoberto perez',
-            photo: 'fotos-grado-once/docente1.jpg',
-            infografia: 'Carismático, alegre y trabajador, siempre buscando lo mejor para sus estudiantes, defensor de quienes lo necesitan y con una gran capacidad para escuchar y comprender, dispuesto a acompañarnos y apoyarnos en cada momento, dejando una huella especial en quienes han compartido esta etapa con él.',
-            info: 'Curso: 11 · Documento: 9001',
-            dedicatoria: ''
-        },
-        {
-            name: 'Sandra pinilla',
-            photo: 'fotos-grado-once/docente2.jpg',
-            infografia: 'Gran profesora, alegre, amable y siempre dispuesta a buscar lo mejor para sus estudiantes, resiliente y fuerte ante cada obstáculo, cariñosa, solidaria y defensora de quienes quiere, dejando una huella especial en cada persona que ha tenido la oportunidad de conocerla.',
-            info: 'Curso: 11 · Documento: 9002',
-            dedicatoria: ''
-        },
-        {
-            name: 'Juan Pablo Bautista Rodríguez',
-            photo: 'fotos-grado-once/alumno1.jpg',
-            infografia: 'Infografía',
-            info: 'Curso: 11 · Documento: 1001',
-            profession: 'Futuro ingeniero de sistemas'
-        },
-        {
-            name: 'Valery Sofía Bonaldy yepes',
-            photo: 'fotos-grado-once/alumno2.jpg',
-            infografia: 'Gran personalidad, buena amiga y compañera, solidaria, valiente y con un gran estilo, siempre dispuesta a apoyar a quienes quiere, llena de sueños, metas y nuevos retos que está preparada para conquistar.',
-            info: 'Curso: 11 · Documento: 1002',
-            profession: 'Futura psicóloga'
-        },
-        {
-            name: 'Nicolás Camen García ',
-            photo: 'fotos-grado-once/alumno3.jpg',
-            infografia: 'Infografía',
-            info: 'Curso: 11 · Documento: 1003',
-            profession: 'Futuro ingeniero de sistemas'
-        },
-        {
-            name: 'Mariana Castro blanco ',
-            photo: 'fotos-grado-once/alumno4.jpg',
-            infografia: 'Inteligente, estudiosa y responsable, apasionada por el baile, realista y constante con todo lo que se propone, una gran amiga y apoyo para quienes la rodean, alegre y dedicada, con sueños enormes y metas infinitas que la motivan a seguir creciendo y alcanzar todo aquello que se proponga.',
-            info: 'Curso: 11 · Documento: 1004',
-            profession: 'Futura ingeniera de sistemas'
-        },
-        {
-            name: 'Ashley nicolle Choles soto ',
-            photo: 'fotos-grado-once/alumno5.jpg',
-            infografia: 'Infografía',
-            info: 'Curso: 11 · Documento: 1005',
-            profession: 'Futura ingeniera de sistemas'
-        },
-        {
-            name: 'Laura Sofía Cupasachoa cabezas ',
-            photo: 'fotos-grado-once/alumno6.jpg',
-            infografia: 'Infografía',
-            info: 'Curso: 11 · Documento: 1006',
-            profession: 'Futura ingeniera de sistemas'
-        },
-        {
-            name: 'Luis Carlos Domínguez truyol ',
-            photo: 'fotos-grado-once/alumno7.jpg',
-            infografia: 'Infografía',
-            info: 'Curso: 11 · Documento: 1007',
-            profession: 'Futuro'
-        },
-        {
-            name: 'Jennyfer Valentina Espitia ladino',
-            photo: 'fotos-grado-once/alumno8.jpg',
-            infografia: 'Extrovertida, cariñosa y llena de energía, un poquito ruidosa pero siempre con una sonrisa y una ocurrencia para compartir, amante del maquillaje y de los gatos, consciente de lo que quiere y de lo que la rodea, con un corazón dispuesto a escuchar, ayudar y hacer sentir bien a los demás, llena de sueños y metas por cumplir.',
-            info: 'Curso: 11 · Documento: 1008',
-            profession: 'Futura psicóloga'
-        },
-        {
-            name: 'Yary yaneid Fajardo Cruz',
-            photo: 'fotos-grado-once/alumno9.jpg',
-            infografia: 'Infografía',
-            info: 'Curso: 11 · Documento: 1009',
-            profession: 'Futura'
-        },
-        {
-            name: 'Joseph Starly Gómez castellanos ',
-            photo: 'fotos-grado-once/alumno10.jpg',
-            infografia: 'Infografía',
-            info: 'Curso: 11 · Documento: 1010',
-            profession: 'Futuro'
-        },
-        {
-            name: 'María Camila López castiblanco',
-            photo: 'fotos-grado-once/alumno11.jpg',
-            infografia: 'Alegre, carismática y con una personalidad que no pasa desapercibida, con gustos variados y siempre dispuesta a descubrir cosas nuevas, apoya incondicionalmente a sus amigos, valiente y fuerte ante cualquier desafío, respetuosa, solidaria y con una energía que hace especial cada momento.',
-            info: 'Curso: 11 · Documento: 1011',
-            profession: 'Futura'
-        },
-        {
-            name: 'Laura carolina lozada Martínez',
-            photo: 'fotos-grado-once/alumno12.jpg',
-            infografia: 'Carismática, responsable, amable y solidaria, con una personalidad alegre y un gran corazón, buena amiga y compañera, llena de sueños infinitos y nuevas experiencias por vivir, dejando su huella en cada paso que da.',
-            info: 'Curso: 11 · Documento: 1012',
-            profession: 'Futura'
-        },
-        {
-            name: 'Julián David Mateus Amaya',
-            photo: 'fotos-grado-once/alumno13.jpg',
-            infografia: 'Gran estilo y personalidad, siempre destacando por su forma de ser y su buena energía, gran amigo, alegre y con un ambiente que contagia a quienes lo rodean, fuerte y valiente ante los retos, con grandes metas y la determinación para hacerlas realidad.',
-            info: 'Curso: 11 · Documento: 1013',
-            profession: 'Futuro'
-        },
-        {
-            name: 'John David Monroy tique',
-            photo: 'fotos-grado-once/alumno14.jpg',
-            infografia: 'Corazón amable, extrovertido, muy alegre e inteligente, quiere mucho a sus amigos, siempre da lo mejor de sí, positivo y divertido, fan de Milo J, con muchas metas por alcanzar.',
-            info: 'Curso: 11 · Documento: 1014',
-            profession: 'Futuro médico veterinario zootecnista'
-        },
-        {
-            name: 'Diego Ortega feria ',
-            photo: 'fotos-grado-once/alumno15.jpg',
-            infografia: 'Extrovertido, alegre y espontáneo, divertido y carismático, siempre tiene una ocurrencia para hacer reír, le encanta compartir con sus amigos y convertir cualquier momento en una anécdota, viviendo cada experiencia al máximo.',
-            info: 'Curso: 11 · Documento: 1015',
-            profession: 'Futuro'
-        },
-        {
-            name: 'Vivian Johana quintero caceres',
-            photo: 'fotos-grado-once/alumno16.jpg',
-            infografia: 'Infografía',
-            info: 'Curso: 11 · Documento: 1016',
-            profession: 'Futura ingeniera de sistemas'
-        },
-        {
-            name: 'María José salas Ruiz ',
-            photo: 'fotos-grado-once/alumno17.jpg',
-            infografia: 'Gran amiga, carismática, responsable y deportista, con muchos sueños por cumplir, siempre comprometida con lo que se propone y con un gran corazón para sus amistades, disfrutando cada etapa mientras trabaja por aquello que desea.',
-            info: 'Curso: 11 · Documento: 1017',
-            profession: 'Futura repostera'
-        },
-        {
-            name: 'Laura Alejandra Suárez giraldo ',
-            photo: 'fotos-grado-once/alumno18.jpg',
-            infografia: 'Gran compañía, alegre, extrovertida y apasionada, le encanta compartir y salir con sus amigos, decidida y soñadora, siempre lucha por aquello que se propone y está construyendo el camino hacia sus sueños.',
-            info: 'Curso: 11 · Documento: 1018',
-            profession: 'Futura negociadora internacional'
-        },
-        {
-            name: 'Matías tiempo Ávila ',
-            photo: 'fotos-grado-once/alumno19.jpg',
-            infografia: 'Infografía',
-            info: 'Curso: 11 · Documento: 1019',
-            profession: 'Futuro ingeniero de sistemas'
-        },
-        {
-            name: 'Kim mai lee Vanegas Rivas',
-            photo: 'fotos-grado-once/alumno20.jpg',
-            infografia: 'Súper extrovertida, deportista, carismática y alegre, siempre dispuesta a compartir momentos divertidos, con un gran corazón y mucha sensibilidad, le gusta ayudar a quienes la rodean y está lista para cumplir cada una de sus metas.',
-            info: 'Curso: 11 · Documento: 1020',
-            profession: 'Futura gastrónoma'
-        },
-        {
-            name: 'Daysi Vanesa Vega gallo ',
-            photo: 'fotos-grado-once/alumno21.jpg',
-            infografia: 'Personalidad alegre, extrovertida y risueña, muy habladora, estudiosa e inteligente, con un corazón noble y siempre dispuesta a ayudar, amistosa, dedicada y llena de ilusiones que espera convertir en grandes logros.',
-            info: 'Curso: 11 · Documento: 1021',
-            profession: 'Futura'
-        },
-        {
-            name: 'Duvan Velázquez ',
-            photo: 'fotos-grado-once/alumno22.jpg',
-            infografia: 'Callado, introvertido y alegre, de pocas palabras pero con un gran sentido del humor, amable, tranquilo y comprensivo, disfruta compartir con las personas que quiere, buen amigo y con muchas aspiraciones que poco a poco hará realidad.',
-            info: 'Curso: 11 · Documento: 1022',
-            profession: 'Futura ingeniera de sistemas'
-        },
-        {
-            name: 'Samuel Mateo Yate Escobar',
-            photo: 'fotos-grado-once/IMG-20260724-WA0139 - Copia.jpg',
-            infografia: 'Gran amigo, comprensivo, le gusta compartir con sus amigos, extrovertido, fanático de la F1, futuro emprendedor',
-            info: 'Curso: 11 · CD: 1023',
-            profession: 'Futuro ingeniero de sistemas'
-        }
-    ];
-
-    let docentes = [
-        {
-            name: 'Sebastián',
-            photo: '',
-            infografia: 'Docente de biología',
-            info: 'Asignatura: Biología',
-            profession: 'Acompañamiento y formación integral'
-        },
-        {
-            name: 'Dagoberto',
-            photo: '',
-            infografia: 'Docente de matemáticas',
-            info: 'Asignatura: Matemáticas',
-            profession: 'Enseñanza aplicada y apoyo académico'
-        }
-    ];
-
-    let noticias = [
-        {
-            name: "noticias" ,
-            photo:'',
-            infografia: 'noticias',
-            info: 'noticias',
-            informacion:'',
-
-        }
-
-
-    ];
 
     function renderGradoCard(student) {
         const name = escapeHtml(student.name || '');
-        const photo = student.photo
-            ? `<img src="${escapeHtml(student.photo)}" alt="${name}" />`
+        const foto = fotoUrl(student.photo, 'fotos-grado-once');
+        const photo = foto
+            ? `<img src="${escapeHtml(foto)}" alt="${name}" />`
             : `<div class="placeholder-photo">${escapeHtml((student.name || '').charAt(0))}</div>`;
 
         return `
@@ -724,7 +479,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <h3 class="grado-card__name">${name}</h3>
                     <p class="grado-card__text">${escapeHtml(student.infografia || '')}</p>
                     <p class="grado-card__text">${escapeHtml(student.info || '')}</p>
-                    <p class="grado-card__text">${escapeHtml(student.profession || student.dedicatoria || 'Estudiante del grado once')}</p>
+                    <p class="grado-card__text">${escapeHtml(student.profession || 'Estudiante del grado once')}</p>
                 </div>
             </div>
         `;
@@ -733,8 +488,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // los textos de los docentes vienen del panel, por eso se escapan antes de pintarlos
     function renderDocenteCard(docente) {
         const name = escapeHtml(docente.name || '');
-        const photo = docente.photo
-            ? `<img src="fotos-docentes/${encodeURIComponent(docente.photo)}" alt="${name}" />`
+        const foto = fotoUrl(docente.photo, 'fotos-docentes');
+        const photo = foto
+            ? `<img src="${escapeHtml(foto)}" alt="${name}" />`
             : `<div class="placeholder-photo">${escapeHtml((docente.name || '').charAt(0))}</div>`;
 
         return `
@@ -750,235 +506,156 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
     }
 
-    async function renderGaleria() {
+    function renderGaleria() {
         const container = document.getElementById('galeria-container');
+        if (!container || !contenidoCargado) return;
 
-        if (!container) return;
-
-        try {
-            const respuesta = await fetch('/api/galeria');
-
-            if (!respuesta.ok) {
-                throw new Error('Error al obtener las fotos de la galería');
-            }
-
-            const fotos = await respuesta.json();
-
-            if (fotos.length === 0) {
-                container.innerHTML = '<p>No hay fotos disponibles en la galería.</p>';
-                return;
-            }
-
-            container.innerHTML = fotos.map((foto) => `
-                <div class="galeria-item">
-                    <img
-                        src="fotos-galeria/${encodeURIComponent(foto)}"
-                        alt="Foto del Instituto Santa Ana Luz Del Carmen"
-                        loading="lazy"
-                    >
-                </div>
-            `).join('');
-        } catch (error) {
-            console.error('Error al cargar la galería:', error);
-            container.innerHTML = '<p>No se pudieron cargar las fotos de la galería.</p>';
+        const fotos = publicContent.galeria.filter((foto) => foto.url);
+        if (fotos.length === 0) {
+            container.innerHTML = '<p>No hay fotos disponibles en la galería.</p>';
+            return;
         }
+
+        container.innerHTML = fotos.map((foto) => `
+            <div class="galeria-item">
+                <img
+                    src="${escapeHtml(fotoUrl(foto.url, 'fotos-galeria'))}"
+                    alt="${escapeHtml(foto.descripcion || 'Foto del Instituto Santa Ana Luz del Carmen')}"
+                    loading="lazy"
+                >
+            </div>
+        `).join('');
     }
 
-    async function renderInstalaciones() {
+    function renderInstalaciones() {
         const container = document.getElementById('instalaciones-container');
+        if (!container || !contenidoCargado) return;
 
-        if (!container) return;
-
-        try {
-            const respuesta = await fetch('/api/instalaciones');
-
-            if (!respuesta.ok) {
-                throw new Error('Error al obtener las instalaciones');
-            }
-
-            const instalaciones = await respuesta.json();
-
-            if (instalaciones.length === 0) {
-                container.innerHTML = '<p>No hay instalaciones disponibles.</p>';
-                return;
-            }
-
-            // imagen gris con el nombre, para cuando la instalación no tiene foto o la foto no carga
-            const imagenVacia = (nombre) => 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%25%22 height=%22100%25%22%3E%3Crect fill=%22%23e6e6e6%22 width=%22100%25%22 height=%22100%25%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2224%22 fill=%22%23999%22 text-anchor=%22middle%22 dy=%22.3em%22%3E' + encodeURIComponent(nombre || '').replace(/'/g, '%27') + '%3C/text%3E%3C/svg%3E';
-
-            container.innerHTML = instalaciones.map((inst) => {
-                const vacia = escapeHtml(imagenVacia(inst.nombre));
-                return `
-                <div class="instalacion-item">
-                    <div class="instalacion-imagen">
-                        <img
-                            src="${inst.foto ? 'fotos-instalaciones/' + encodeURIComponent(inst.foto) : vacia}"
-                            alt="${escapeHtml(inst.nombre)}"
-                            loading="lazy"
-                            onerror="this.onerror=null; this.src='${vacia}'"
-                        >
-                    </div>
-                    <div class="instalacion-info">
-                        <h3>${escapeHtml(inst.nombre)}</h3>
-                        <p>${escapeHtml(inst.descripcion)}</p>
-                    </div>
-                </div>
-            `;
-            }).join('');
-        } catch (error) {
-            console.error('Error al cargar las instalaciones:', error);
-            container.innerHTML = '<p>No se pudieron cargar las instalaciones.</p>';
+        const instalaciones = publicContent.instalaciones;
+        if (instalaciones.length === 0) {
+            container.innerHTML = '<p>No hay instalaciones disponibles.</p>';
+            return;
         }
+
+        // imagen gris con el nombre, para cuando la instalación no tiene foto o la foto no carga
+        const imagenVacia = (nombre) => 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%25%22 height=%22100%25%22%3E%3Crect fill=%22%23e6e6e6%22 width=%22100%25%22 height=%22100%25%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 font-size=%2224%22 fill=%22%23999%22 text-anchor=%22middle%22 dy=%22.3em%22%3E' + encodeURIComponent(nombre || '').replace(/'/g, '%27') + '%3C/text%3E%3C/svg%3E';
+
+        container.innerHTML = instalaciones.map((inst) => {
+            const vacia = escapeHtml(imagenVacia(inst.nombre));
+            const foto = fotoUrl(inst.foto, 'fotos-instalaciones');
+            return `
+            <div class="instalacion-item">
+                <div class="instalacion-imagen">
+                    <img
+                        src="${foto ? escapeHtml(foto) : vacia}"
+                        alt="${escapeHtml(inst.nombre)}"
+                        loading="lazy"
+                        onerror="this.onerror=null; this.src='${vacia}'"
+                    >
+                </div>
+                <div class="instalacion-info">
+                    <h3>${escapeHtml(inst.nombre)}</h3>
+                    <p>${escapeHtml(inst.descripcion)}</p>
+                </div>
+            </div>
+        `;
+        }).join('');
+    }
+
+    // ==========================
+    // CARRUSELES (Docentes y Grado Once)
+    // ==========================
+    // Un solo atajo de teclado para el carrusel que esté en pantalla, así no se acumulan al cambiar de sección
+    let carruselActivo = null;
+    document.addEventListener('keydown', (e) => {
+        if (!carruselActivo || !document.body.contains(carruselActivo.container)) return;
+        if (e.key === 'ArrowLeft') carruselActivo.show(carruselActivo.current - 1);
+        if (e.key === 'ArrowRight') carruselActivo.show(carruselActivo.current + 1);
+    });
+
+    function iniciarCarrusel(prefijo, items, renderCard) {
+        const container = document.getElementById(`${prefijo}-card`);
+        const prevBtn = document.getElementById(`${prefijo}-prev`);
+        const nextBtn = document.getElementById(`${prefijo}-next`);
+        const dotsContainer = document.getElementById(`${prefijo}-dots`);
+
+        if (!container || !prevBtn || !nextBtn || !dotsContainer || !contenidoCargado) return;
+        if (items.length === 0) {
+            container.innerHTML = '<p>Aún no hay información para mostrar.</p>';
+            return;
+        }
+
+        const carrusel = { container, current: 0 };
+        carrusel.show = (index) => {
+            carrusel.current = (index + items.length) % items.length;
+            container.innerHTML = renderCard(items[carrusel.current]);
+
+            dotsContainer.innerHTML = '';
+            items.forEach((item, i) => {
+                const dot = document.createElement('button');
+                dot.className = `${prefijo}-dot` + (i === carrusel.current ? ' active' : '');
+                dot.setAttribute('aria-label', `Ver ${item.name || i + 1}`);
+                dot.addEventListener('click', () => carrusel.show(i));
+                dotsContainer.appendChild(dot);
+            });
+        };
+
+        prevBtn.addEventListener('click', () => carrusel.show(carrusel.current - 1));
+        nextBtn.addEventListener('click', () => carrusel.show(carrusel.current + 1));
+        carruselActivo = carrusel;
+        carrusel.show(0);
     }
 
     function initGradoOnceCarousel() {
-        const container = document.getElementById('grado-card');
-        const prevBtn = document.getElementById('grado-prev');
-        const nextBtn = document.getElementById('grado-next');
-        const dotsContainer = document.getElementById('grado-dots');
-
-        if (!container || !prevBtn || !nextBtn || !dotsContainer || gradoOnceStudents.length === 0) return;
-
-        let current = 0;
-
-        function show(index) {
-            current = (index + gradoOnceStudents.length) % gradoOnceStudents.length;
-            container.innerHTML = renderGradoCard(gradoOnceStudents[current]);
-
-            dotsContainer.innerHTML = '';
-
-            gradoOnceStudents.forEach((student, i) => {
-                const dot = document.createElement('button');
-                dot.className = 'grado-dot' + (i === current ? ' active' : '');
-                dot.setAttribute('aria-label', `Ver ${student.name}`);
-                dot.addEventListener('click', () => show(i));
-                dotsContainer.appendChild(dot);
-            });
-        }
-
-        prevBtn.addEventListener('click', () => show(current - 1));
-        nextBtn.addEventListener('click', () => show(current + 1));
-
-        document.addEventListener('keydown', (e) => {
-            if (!document.querySelector('.grado-once-section')) return;
-            if (e.key === 'ArrowLeft') show(current - 1);
-            if (e.key === 'ArrowRight') show(current + 1);
-        });
-
-        show(0);
+        const estudiantes = publicContent.gradoOnce.slice().sort((a, b) => (a.order || 0) - (b.order || 0));
+        iniciarCarrusel('grado', estudiantes, renderGradoCard);
     }
 
-    async function initDocentesCarousel() {
-        const container = document.getElementById('docente-card');
-        const prevBtn = document.getElementById('docente-prev');
-        const nextBtn = document.getElementById('docente-next');
-        const dotsContainer = document.getElementById('docente-dots');
-
-        try {
-            const respuesta = await fetch('/api/public-content');
-
-            if (!respuesta.ok) {
-                throw new Error('Error al obtener el contenido público');
-            }
-
-            const contenido = await respuesta.json();
-            if (Array.isArray(contenido.docentes)) docentes = contenido.docentes;
-        } catch (error) {
-            console.error('Error al cargar los docentes:', error);
-        }
-
-        if (!container || !prevBtn || !nextBtn || !dotsContainer || docentes.length === 0) return;
-
-        let current = 0;
-
-        function show(index) {
-            current = (index + docentes.length) % docentes.length;
-            container.innerHTML = renderDocenteCard(docentes[current]);
-
-            dotsContainer.innerHTML = '';
-
-            docentes.forEach((docente, i) => {
-                const dot = document.createElement('button');
-                dot.className = 'docente-dot' + (i === current ? ' active' : '');
-                dot.setAttribute('aria-label', `Ver ${docente.name}`);
-                dot.addEventListener('click', () => show(i));
-                dotsContainer.appendChild(dot);
-            });
-        }
-
-        prevBtn.addEventListener('click', () => show(current - 1));
-        nextBtn.addEventListener('click', () => show(current + 1));
-
-        document.addEventListener('keydown', (e) => {
-            if (!document.querySelector('.docentes-section')) return;
-            if (e.key === 'ArrowLeft') show(current - 1);
-            if (e.key === 'ArrowRight') show(current + 1);
-        });
-
-        show(0);
+    function initDocentesCarousel() {
+        iniciarCarrusel('docente', publicContent.docentes, renderDocenteCard);
     }
 
-    async function renderNoticias() {
+    function renderNoticias() {
         const container = document.getElementById('noticias-container');
         const prevBtn = document.getElementById('noticias-prev');
         const nextBtn = document.getElementById('noticias-next');
         const dotsContainer = document.getElementById('noticias-dots');
         const controls = document.querySelector('.noticias-controls');
 
-        if (!container || !prevBtn || !nextBtn || !dotsContainer) return;
+        if (!container || !prevBtn || !nextBtn || !dotsContainer || !contenidoCargado) return;
 
-        const showMessage = (message) => {
-            container.innerHTML = `<p class="noticias-message">${message}</p>`;
+        const noticias = publicContent.noticias.filter((noticia) => noticia.url);
+        if (noticias.length === 0) {
+            container.innerHTML = '<p class="noticias-message">Aún no hay noticias publicadas.</p>';
             if (controls) controls.hidden = true;
+            return;
+        }
+
+        let current = 0;
+        if (controls) controls.hidden = false;
+
+        container.innerHTML = noticias.map((noticia, index) => `
+            <div class="noticias-item${index === 0 ? ' active' : ''}" data-index="${index}">
+                <img src="${escapeHtml(fotoUrl(noticia.url, 'fotos-noticias'))}" alt="${escapeHtml(noticia.titulo || `Noticia ${index + 1}`)}" loading="lazy">
+            </div>
+        `).join('');
+
+        const items = [...container.querySelectorAll('.noticias-item')];
+        dotsContainer.innerHTML = noticias.map((noticia, index) => `
+            <button class="noticias-dot${index === 0 ? ' active' : ''}" data-index="${index}" aria-label="Ver noticia ${index + 1}"></button>
+        `).join('');
+
+        const dots = [...dotsContainer.querySelectorAll('.noticias-dot')];
+        const show = (index) => {
+            current = (index + items.length) % items.length;
+            items.forEach((item, itemIndex) => item.classList.toggle('active', itemIndex === current));
+            dots.forEach((dot, dotIndex) => dot.classList.toggle('active', dotIndex === current));
         };
 
-        try {
-            const respuesta = await fetch('/api/noticias');
-
-            if (!respuesta.ok) {
-                throw new Error('Error al obtener las fotos de noticias');
-            }
-
-            const fotos = await respuesta.json();
-            if (!Array.isArray(fotos)) {
-                throw new Error('Formato de respuesta inválido');
-            }
-
-            if (fotos.length === 0) {
-                showMessage('Aún no hay imágenes en Noticias. Agrega fotos en la carpeta fotos-noticias.');
-                return;
-            }
-
-            let current = 0;
-            if (controls) controls.hidden = false;
-
-            container.innerHTML = fotos.map((foto, index) => `
-                <div class="noticias-item${index === 0 ? ' active' : ''}" data-index="${index}">
-                    <img src="fotos-noticias/${encodeURIComponent(foto)}" alt="Noticia ${index + 1}" loading="lazy">
-                </div>
-            `).join('');
-
-            const items = [...container.querySelectorAll('.noticias-item')];
-            dotsContainer.innerHTML = fotos.map((foto, index) => `
-                <button class="noticias-dot${index === 0 ? ' active' : ''}" data-index="${index}" aria-label="Ver noticia ${index + 1}"></button>
-            `).join('');
-
-            const dots = [...dotsContainer.querySelectorAll('.noticias-dot')];
-            const show = (index) => {
-                current = (index + items.length) % items.length;
-                items.forEach((item, itemIndex) => item.classList.toggle('active', itemIndex === current));
-                dots.forEach((dot, dotIndex) => dot.classList.toggle('active', dotIndex === current));
-            };
-
-            prevBtn.addEventListener('click', () => show(current - 1));
-            nextBtn.addEventListener('click', () => show(current + 1));
-            dots.forEach((dot) => dot.addEventListener('click', () => show(Number(dot.dataset.index))));
-        } catch (error) {
-            console.error('Error al cargar Noticias:', error);
-            showMessage('No se pudieron cargar las imágenes de Noticias.');
-        }
+        prevBtn.addEventListener('click', () => show(current - 1));
+        nextBtn.addEventListener('click', () => show(current + 1));
+        dots.forEach((dot) => dot.addEventListener('click', () => show(Number(dot.dataset.index))));
     }
-
 
     function renderSection(sectionName) {
         if (!contentPanel) return;

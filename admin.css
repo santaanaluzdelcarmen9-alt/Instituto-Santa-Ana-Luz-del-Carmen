@@ -210,6 +210,41 @@ button.secondary {
     font-size:.9rem
 }
 
+#login-button {
+    width: 100%;
+}
+
+.foto-campo {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.foto-campo .file-picker {
+    margin: 0;
+}
+
+.foto-preview {
+    width: 96px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: #f1f5f9;
+}
+
+.foto-vacia {
+    display: grid;
+    place-items: center;
+    color: var(--muted);
+    font-size: .8rem;
+}
+
+.section-heading .file-picker {
+    margin: 0;
+}
+
 .user-item {
     display:flex;
     flex-wrap:wrap;

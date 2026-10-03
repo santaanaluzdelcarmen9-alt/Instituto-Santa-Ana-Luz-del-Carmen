@@ -11,44 +11,69 @@
         <section id="login-view" class="panel login-panel">
             <p class="eyebrow">Instituto Santa Ana</p>
             <h1>Panel de directivas</h1>
-            <p>Administra la información pública del instituto.</p>
-            <form id="login-form">
-                <label>Correo institucional<input id="email" type="email" required autocomplete="username"></label>
-                <label>Contraseña<input id="password" type="password" required autocomplete="current-password"></label>
-                <button type="submit">Entrar</button>
-                <p id="login-message" class="message"></p>
-            </form>
+            <p>Administra la información pública del instituto. Entra con la cuenta de Google que las directivas registraron en el panel.</p>
+            <button type="button" id="login-button">Entrar con Google</button>
+            <p id="login-message" class="message" role="alert"></p>
         </section>
 
         <section id="admin-view" hidden>
             <header class="admin-header">
-                <div><p class="eyebrow">Contenido publicado</p><h1>Administración</h1></div>
+                <div><p class="eyebrow" id="admin-email">Contenido publicado</p><h1>Administración</h1></div>
                 <button id="logout-button" class="secondary">Cerrar sesión</button>
             </header>
+
+            <section class="panel">
+                <h2>Directivas</h2>
+                <p class="hint">Estas cuentas de Google pueden entrar a este panel. La cuenta principal del colegio siempre puede entrar, aunque no esté en la lista.</p>
+                <form class="profesor-form" data-lista-correos="directivas">
+                    <input type="email" required placeholder="correo@ejemplo.com" aria-label="Correo de la directiva">
+                    <button type="submit">Agregar directiva</button>
+                </form>
+                <ul class="profesores-list" id="directivas-list"></ul>
+                <p class="message" id="directivas-message"></p>
+            </section>
+
             <section class="panel">
                 <h2>Profesores</h2>
                 <p class="hint">Los correos de esta lista entran a Actividades como profesores. Cualquier otro correo que entre con Google es estudiante.</p>
-                <form id="profesor-form" class="profesor-form">
-                    <input id="profesor-email" type="email" required placeholder="correo@ejemplo.com" aria-label="Correo del profesor">
+                <form class="profesor-form" data-lista-correos="profesores">
+                    <input type="email" required placeholder="correo@ejemplo.com" aria-label="Correo del profesor">
                     <button type="submit">Agregar profesor</button>
                 </form>
-                <ul id="profesores-list" class="profesores-list"></ul>
-                <p id="profesores-message" class="message"></p>
+                <ul class="profesores-list" id="profesores-list"></ul>
+                <p class="message" id="profesores-message"></p>
             </section>
+
             <section class="panel">
                 <div class="section-heading"><h2>Cuentas que han entrado</h2><button type="button" id="refresh-users" class="secondary">Actualizar</button></div>
-                <p class="hint">Todas las personas que han entrado con Google en Actividades. Puedes quitarle el acceso a cualquiera.</p>
+                <p class="hint">Todas las personas que han entrado con Google en Actividades. Si le quitas el acceso a alguien, no podrá volver a entrar.</p>
                 <div id="users-list"></div>
                 <p id="users-message" class="message"></p>
             </section>
+
+            <section class="panel">
+                <h2>Configuración de fotos (Cloudinary)</h2>
+                <p class="hint">Las fotos que subes en este panel se guardan en Cloudinary. Copia aquí el <strong>Cloud name</strong> (aparece en el inicio de Cloudinary) y el nombre del <strong>upload preset</strong> sin firma (Settings → Upload → Upload presets, con "Signing mode: Unsigned").</p>
+                <form id="cloudinary-form" class="form-grid">
+                    <label>Cloud name<input name="cloudName" required autocomplete="off"></label>
+                    <label>Upload preset<input name="preset" required autocomplete="off"></label>
+                    <div class="wide"><button type="submit">Guardar configuración de fotos</button></div>
+                </form>
+                <p id="cloudinary-message" class="message"></p>
+            </section>
+
             <form id="content-form">
+                <p id="contenido-inicial" class="panel hint" hidden>Este es el contenido inicial del sitio. Revísalo y pulsa <strong>Guardar cambios</strong> para publicarlo.</p>
+
                 <section class="panel">
                     <h2>Información principal</h2>
-                        <div class="form-grid">
-                    <label>Nombre del instituto<input name="institution.name" required></label>
-                    <label>Etiqueta<input name="institution.badge"></label>
-                    <label class="wide">Descripción<textarea name="institution.description" rows="3"></textarea></label>
-                </div></section>
+                    <div class="form-grid">
+                        <label>Nombre del instituto<input name="institution.name" required></label>
+                        <label>Etiqueta<input name="institution.badge"></label>
+                        <label class="wide">Descripción<textarea name="institution.description" rows="3"></textarea></label>
+                    </div>
+                </section>
+
                 <section class="panel">
                     <h2>Datos legales del colegio</h2>
                     <p class="hint">Aparecen en la Política de tratamiento de datos, los Términos y condiciones y el Aviso de imágenes. Mientras estén vacíos, la página muestra [corchetes] en su lugar.</p>
@@ -61,6 +86,7 @@
                         <label>Fecha de la última actualización<input name="legal.actualizado" type="date"></label>
                     </div>
                 </section>
+
                 <section class="panel">
                     <h2>Secciones del sitio</h2>
                     <div class="form-grid">
@@ -70,23 +96,59 @@
                         <label class="wide">Manual<textarea name="section.inicio.manual" rows="3"></textarea></label>
                         <label class="wide">Actividades<textarea name="section.Actividades" rows="4"></textarea></label>
                         <label class="wide">Académico<textarea name="section.academico" rows="4"></textarea></label>
-                        <label class="wide">Instalaciones<textarea name="section.instalaciones" rows="4"></textarea></label>
-                        <label class="wide">Noticias<textarea name="section.noticias" rows="4"></textarea></label>
                         <label class="wide">Contacto<textarea name="section.contacto" rows="4"></textarea></label>
                     </div>
                 </section>
+
                 <section class="panel">
-                    <div class="section-heading"><h2>Avisos</h2><button type="button" id="add-notice" class="secondary">Añadir aviso</button></div><div id="notices-list"></div></section>
-                <section class="panel"><div class="section-heading"><h2>Instalaciones</h2><button type="button" id="add-instalacion" class="secondary">Añadir instalación</button></div><div id="instalaciones-list"></div></section>
-                <section class="panel">
-                    <h2>Galería de fotos</h2>
-                    <p class="hint">Sube tus fotografías a la carpeta <code>fotos-galeria/</code> en el servidor. Las imágenes se mostrarán automáticamente.</p>
+                    <div class="section-heading"><h2>Avisos</h2><button type="button" class="secondary" data-agregar="notices">Añadir aviso</button></div>
+                    <div data-lista="notices"></div>
                 </section>
-                <section class="panel"><div class="section-heading"><h2>Docentes</h2><button type="button" id="add-teacher" class="secondary">Añadir docente</button></div><p class="hint">El número de orden decide la posición de cada ficha.</p><div id="teachers-list"></div></section>
+
+                <section class="panel">
+                    <div class="section-heading"><h2>Instalaciones</h2><button type="button" class="secondary" data-agregar="instalaciones">Añadir instalación</button></div>
+                    <div data-lista="instalaciones"></div>
+                </section>
+
+                <section class="panel">
+                    <div class="section-heading">
+                        <h2>Galería de fotos</h2>
+                        <label class="file-picker">
+                            <input type="file" accept="image/*,.heic" multiple data-subir-varias="galeria">
+                            <span class="file-button">Subir fotos</span>
+                        </label>
+                    </div>
+                    <p class="hint">Puedes elegir varias fotos a la vez. Publica fotos de estudiantes solo con autorización de sus padres o acudientes.</p>
+                    <div data-lista="galeria"></div>
+                </section>
+
+                <section class="panel">
+                    <div class="section-heading"><h2>Noticias</h2><button type="button" class="secondary" data-agregar="noticias">Añadir noticia</button></div>
+                    <p class="hint">Cada noticia es una imagen (por ejemplo, un afiche) con su título.</p>
+                    <div data-lista="noticias"></div>
+                </section>
+
+                <section class="panel">
+                    <div class="section-heading"><h2>Docentes</h2><button type="button" class="secondary" data-agregar="docentes">Añadir docente</button></div>
+                    <p class="hint">El número de orden decide la posición de cada ficha.</p>
+                    <div data-lista="docentes"></div>
+                </section>
+
+                <section class="panel">
+                    <div class="section-heading"><h2>Grado Once</h2><button type="button" class="secondary" data-agregar="gradoOnce">Añadir estudiante</button></div>
+                    <p class="hint">El número de orden decide la posición de cada ficha. Publica nombres y fotos de estudiantes solo con autorización de sus padres o acudientes.</p>
+                    <div data-lista="gradoOnce"></div>
+                </section>
+
                 <div class="save-bar"><span id="save-message" class="message"></span><button type="submit">Guardar cambios</button></div>
             </form>
         </section>
     </main>
+
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-init.js"></script>
     <script src="admin.js"></script>
 </body>
 </html>
