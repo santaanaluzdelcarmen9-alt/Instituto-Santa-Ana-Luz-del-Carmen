@@ -62,14 +62,27 @@ document.addEventListener('DOMContentLoaded', function () {
     // ==========================
     // DATOS LEGALES DEL COLEGIO
     // ==========================
-    // Las directivas deben reemplazar lo que está entre [corchetes] antes de publicar el sitio.
+    // Los datos se llenan en admin.html ("Datos legales del colegio"). Mientras falten, se muestran [corchetes].
+    function datoLegal(campo, siFalta) {
+        const valor = String(publicContent.legal?.[campo] || '').trim();
+        return valor ? escapeHtml(valor) : siFalta;
+    }
+
+    function fechaLegal() {
+        const valor = publicContent.legal?.actualizado;
+        const fecha = valor ? new Date(`${valor}T12:00:00`) : null;
+        return fecha && !isNaN(fecha)
+            ? fecha.toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })
+            : '[fecha de la última actualización]';
+    }
+
     const datosLegales = {
-        nit: '[NIT del colegio]',
-        direccion: '[Dirección del colegio]',
-        ciudad: '[Ciudad], Colombia',
-        correo: '[correo de contacto de las directivas]',
-        telefono: '[teléfono]',
-        actualizado: '[fecha de la última actualización]'
+        get nit() { return datoLegal('nit', '[NIT del colegio]'); },
+        get direccion() { return datoLegal('direccion', '[Dirección del colegio]'); },
+        get ciudad() { return `${datoLegal('ciudad', '[Ciudad]')}, Colombia`; },
+        get correo() { return datoLegal('correo', '[correo de contacto de las directivas]'); },
+        get telefono() { return datoLegal('telefono', '[teléfono]'); },
+        get actualizado() { return fechaLegal(); }
     };
 
     function paginaLegal(titulo, cuerpo) {
@@ -172,6 +185,10 @@ document.addEventListener('DOMContentLoaded', function () {
             <h3>8. Cambios y ley aplicable</h3>
             <p>El colegio puede modificar estos términos; la versión vigente es la publicada aquí. Se rigen por las leyes de la
             República de Colombia. Contacto: ${datosLegales.correo}.</p>
+
+            <h3>9. Desarrollo del sitio</h3>
+            <p>Sitio desarrollado por Samuel Mateo Yate Escobar con ayuda de Claude Code, una herramienta
+            de inteligencia artificial de Anthropic.</p>
         `),
         'avisos-legales': () => paginaLegal('Aviso de imágenes y servicios externos', `
             <h3>Uso de imágenes</h3>

@@ -144,6 +144,7 @@ app.get('/api/public-content', (req, res) => {
         institution: content.institution || {},
         notices: Array.isArray(content.notices) ? content.notices : [],
         docentes: Array.isArray(content.docentes) ? content.docentes : [],
+        legal: content.legal || {},
         sections: {
             inicio: sections.inicio || {},
             Actividades: sections.Actividades || '...',
@@ -212,6 +213,7 @@ app.get('/api/admin/content', requireAdmin, (req, res) => {
             notices: Array.isArray(content.notices) ? content.notices : [],
             docentes: Array.isArray(content.docentes) ? content.docentes : [],
             instalaciones: Array.isArray(content.instalaciones) ? content.instalaciones : [],
+            legal: content.legal || {},
             sections: content.sections || {}
         });
     } catch (error) {
@@ -237,6 +239,7 @@ app.put('/api/admin/content', requireAdmin, (req, res) => {
         notices: next.notices,
         docentes: next.docentes,
         instalaciones: Array.isArray(next.instalaciones) ? next.instalaciones : [], // <-- esto faltaba
+        legal: next.legal && typeof next.legal === 'object' ? next.legal : {},
         sections: normalizedSections
     };
 

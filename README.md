@@ -170,6 +170,12 @@ git push
 
 Samuel Mateo Yate Escobar. Proyecto desarrollado para el Instituto Santa Ana Luz del Carmen.
 
+Desarrollado con ayuda de [Claude Code](https://claude.com/claude-code), la herramienta de programación con inteligencia artificial de Anthropic.
+
+## Páginas legales
+
+El sitio incluye una Política de tratamiento de datos personales (Ley 1581 de 2012), Términos y condiciones y un Aviso de imágenes y servicios externos, enlazados al final de la página. Los datos del colegio que aparecen en ellas (NIT, dirección, ciudad, correo, teléfono y fecha) se llenan en el panel, en **Datos legales del colegio**.
+
 ## Licencia
 
 MIT.

@@ -1,6 +1,7 @@
 const tokenKey = 'santa-ana-admin-token';
 let content = null;
 const $ = (selector) => document.querySelector(selector);
+const camposLegales = ['nit', 'telefono', 'direccion', 'ciudad', 'correo', 'actualizado'];
 
 function request(url, options = {}) {
     const token = sessionStorage.getItem(tokenKey);
@@ -64,6 +65,9 @@ function render() {
     $('[name="section.noticias"]').value = sections.noticias || '';
     $('[name="section.contacto"]').value = sections.contacto || '';
 
+    const legal = content.legal || {};
+    camposLegales.forEach((campo) => { $(`[name="legal.${campo}"]`).value = legal[campo] || ''; });
+
     $('#notices-list').innerHTML = content.notices.map((notice, index) => `<div class="item notice-item" data-index="${index}">
       ${input(`notice.${index}.title`,notice.title, 'Título')}
         ${input(`notice.${index}.text`, notice.text, 'Texto')}
@@ -114,6 +118,9 @@ function collect() {
     sections.noticias = $('[name="section.noticias"]').value;
     sections.contacto = $('[name="section.contacto"]').value;
     content.sections = sections;
+
+    content.legal = {};
+    camposLegales.forEach((campo) => { content.legal[campo] = $(`[name="legal.${campo}"]`).value.trim(); });
 
     document.querySelectorAll('.notice-item').forEach((element, index) => 
         { content.notices
