@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+
+Sitemap: https://santa-ana-web-e9f0f.web.app/sitemap.xml

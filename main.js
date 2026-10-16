@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', function () {
     const contentPanel = document.getElementById('content-panel');
-    const navLinks = document.querySelectorAll('.sidebar .nav-link');
-    const pageHeader = document.querySelector('.page-header');
+    const navLinks = document.querySelectorAll('.site-nav .nav-link');
+    // portada, cifras y lema: solo se muestran en Inicio
+    const soloInicio = document.querySelectorAll('.solo-inicio');
     let publicContent = {
         institution: {},
         notices: [],
@@ -122,6 +123,61 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function nombreColegio() {
         return escapeHtml(publicContent.institution?.name || 'Instituto Santa Ana Luz del Carmen');
+    }
+
+    // ==========================
+    // INFORMACIÓN: PERSONAL FIJO
+    // ==========================
+    // ✏️ RELLENAR: cambia lo que está entre [corchetes]. Para agregar a alguien, copia un bloque { ... }, con su coma.
+    // La foto va en imagenes-sitio/personal/ (por ejemplo 'imagenes-sitio/personal/rectora.jpg').
+    // Si no tiene foto, deja photo: '' y se muestra la inicial del nombre.
+    const personalFijo = [
+        { name: '[Nombre completo]', cargo: 'Rector(a)', photo: '', descripcion: '[Una frase sobre su labor o su formación]' },
+        { name: '[Nombre completo]', cargo: 'Coordinador(a) académico', photo: '', descripcion: '[Una frase sobre su labor o su formación]' },
+        { name: '[Nombre completo]', cargo: 'Coordinador(a) de convivencia', photo: '', descripcion: '[Una frase sobre su labor o su formación]' },
+        { name: '[Nombre completo]', cargo: 'Orientador(a) escolar', photo: '', descripcion: '[Una frase sobre su labor o su formación]' },
+        { name: '[Nombre completo]', cargo: 'Secretaría académica', photo: '', descripcion: '[Una frase sobre su labor o su formación]' },
+        { name: '[Nombre completo]', cargo: 'Tesorería', photo: '', descripcion: '[Una frase sobre su labor o su formación]' }
+    ];
+
+    // ==========================
+    // INFORMACIÓN: SOBRE EL COLEGIO
+    // ==========================
+    // ✏️ RELLENAR: cambia el texto entre [corchetes]. Se pueden agregar o borrar tarjetas.
+    // icono: nombre de un ícono de https://icons.getbootstrap.com (por ejemplo 'bi-book', 'bi-calendar-event').
+    const infoColegio = [
+        { icono: 'bi-hourglass-split', titulo: 'Nuestra historia', texto: '[Cuándo y cómo se fundó el colegio, y quién lo fundó.]' },
+        { icono: 'bi-clock', titulo: 'Jornada y horarios', texto: '[Jornada (mañana, tarde, única) y horario de entrada y salida.]' },
+        { icono: 'bi-mortarboard', titulo: 'Niveles que ofrecemos', texto: '[Por ejemplo: preescolar, básica primaria, básica secundaria y media.]' },
+        { icono: 'bi-clipboard-check', titulo: 'Admisiones', texto: '[Pasos y documentos para matricular a un estudiante, y fechas de inscripción.]' },
+        { icono: 'bi-person-badge', titulo: 'Uniformes', texto: '[Cómo es el uniforme de diario y el de educación física, y dónde se consigue.]' },
+        { icono: 'bi-award', titulo: 'Reconocimientos', texto: '[Premios, resultados en las pruebas Saber u otros logros del colegio.]' }
+    ];
+
+    function renderPersonaCard(persona) {
+        const name = escapeHtml(persona.name || '');
+        const foto = persona.photo
+            ? `<img src="${escapeHtml(persona.photo)}" alt="${name}" loading="lazy">`
+            : `<span>${escapeHtml((persona.name || '').replace(/[^\p{L}]/gu, '').charAt(0) || '?')}</span>`;
+
+        return `
+            <article class="persona-card">
+                <div class="persona-card__foto">${foto}</div>
+                <h3>${name}</h3>
+                <p class="persona-card__cargo">${escapeHtml(persona.cargo || '')}</p>
+                <p class="persona-card__texto">${escapeHtml(persona.descripcion || '')}</p>
+            </article>
+        `;
+    }
+
+    function renderInfoCard(info) {
+        return `
+            <article class="info-card">
+                <i class="bi ${escapeHtml(info.icono || 'bi-info-circle')}" aria-hidden="true"></i>
+                <h3>${escapeHtml(info.titulo || '')}</h3>
+                <p>${escapeHtml(info.texto || '')}</p>
+            </article>
+        `;
     }
 
     const sections = {
@@ -340,12 +396,29 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
             </section>
         `,
-        contacto: () => `
+        // el texto de introducción se edita en el panel, en el campo que antes se llamaba "Contacto"
+        informacion: () => `
             <section class="section-card">
-                <h2>Contacto</h2>
+                <h2>Información institucional</h2>
                 <p>${escapeHtml(publicContent.sections?.contacto || '...')}</p>
             </section>
+
+            <section class="section-card">
+                <h2>Nuestro equipo</h2>
+                <div class="personal-grid">
+                    ${personalFijo.map(renderPersonaCard).join('')}
+                </div>
+            </section>
+
+            <section class="section-card">
+                <h2>Sobre el colegio</h2>
+                <div class="info-grid">
+                    ${infoColegio.map(renderInfoCard).join('')}
+                </div>
+            </section>
         `,
+        // los enlaces viejos a #contacto siguen funcionando
+        contacto: () => sections.informacion(),
         "grado-once": () => `
             <section class="section-card grado-once-section">
                 <h2>Grado Once</h2>
@@ -836,9 +909,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderSection(sectionName) {
         if (!contentPanel) return;
 
-        if (pageHeader) {
-            pageHeader.style.display = sectionName === 'inicio' ? 'grid' : 'none';
-        }
+        soloInicio.forEach((zona) => {
+            zona.hidden = sectionName !== 'inicio';
+        });
 
         const renderer = sections[sectionName] || sections.inicio;
         contentPanel.innerHTML = renderer();
@@ -938,20 +1011,47 @@ document.addEventListener('DOMContentLoaded', function () {
             this.classList.add('active');
             window.location.hash = sectionName;
             renderSection(sectionName);
+            cerrarMenu();
+            window.scrollTo(0, 0);
         });
     });
 
-    // enlaces legales del pie de página y de Actividades
+    // enlaces legales, botones de la portada, escudo y enlaces del pie de página
     document.addEventListener('click', (event) => {
-        const link = event.target.closest('.legal-link');
+        const link = event.target.closest('.legal-link, .ir-a');
         if (!link) return;
         event.preventDefault();
         const sectionName = link.dataset.section;
-        navLinks.forEach((item) => item.classList.remove('active'));
+        navLinks.forEach((item) => item.classList.toggle('active', item.dataset.section === sectionName));
         window.location.hash = sectionName;
         renderSection(sectionName);
+        cerrarMenu();
         window.scrollTo(0, 0);
     });
+
+    // ==========================
+    // MENÚ DEL CELULAR (botón de tres rayitas)
+    // ==========================
+    const siteHeader = document.querySelector('.sidebar');
+    const menuToggle = document.querySelector('.menu-toggle');
+
+    function cerrarMenu() {
+        if (!siteHeader || !menuToggle) return;
+        siteHeader.classList.remove('menu-abierto');
+        menuToggle.setAttribute('aria-expanded', 'false');
+        menuToggle.setAttribute('aria-label', 'Abrir menú');
+    }
+
+    if (menuToggle && siteHeader) {
+        menuToggle.addEventListener('click', () => {
+            const abierto = siteHeader.classList.toggle('menu-abierto');
+            menuToggle.setAttribute('aria-expanded', String(abierto));
+            menuToggle.setAttribute('aria-label', abierto ? 'Cerrar menú' : 'Abrir menú');
+        });
+    }
+
+    const anioActual = document.getElementById('anio-actual');
+    if (anioActual) anioActual.textContent = new Date().getFullYear();
 
     const seccionActual = window.location.hash.substring(1) || 'inicio';
 
