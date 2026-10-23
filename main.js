@@ -10,6 +10,12 @@ document.addEventListener('DOMContentLoaded', function () {
         instalaciones: [],
         galeria: [],
         noticias: [],
+        cifras: plantillas.cifras,
+        personal: plantillas.personal,
+        infoColegio: plantillas.infoColegio,
+        lema: {},
+        contacto: {},
+        redes: {},
         legal: {},
         sections: {
             inicio: { mission: '...', vision: '...', values: '...', manual: '...' },
@@ -45,6 +51,9 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             const datos = await leerContenido();
             const lista = (valor) => (Array.isArray(valor) ? valor : []);
+            // si una lista nunca se ha guardado en el panel se usa su plantilla; si se vació a propósito, queda vacía
+            const conPlantilla = (nombre) => (Array.isArray(datos[nombre]) ? datos[nombre] : plantillas[nombre]);
+            const porOrden = (a, b) => (a.order || 0) - (b.order || 0);
             publicContent = {
                 ...publicContent,
                 ...datos,
@@ -53,6 +62,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 instalaciones: lista(datos.instalaciones),
                 galeria: lista(datos.galeria),
                 noticias: lista(datos.noticias),
+                cifras: conPlantilla('cifras'),
+                personal: conPlantilla('personal').slice().sort(porOrden),
+                infoColegio: conPlantilla('infoColegio'),
+                lema: datos.lema || {},
+                contacto: datos.contacto || {},
+                redes: datos.redes || {},
                 sections: { ...publicContent.sections, ...(datos.sections || {}) }
             };
             contenidoCargado = true;
@@ -64,6 +79,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (title) title.textContent = institution.name || title.textContent;
             if (badge) badge.textContent = institution.badge || badge.textContent;
             if (description) description.textContent = institution.description || description.textContent;
+            pintarPartesFijas();
 
             // los avisos se pintan todos desde el panel: se pueden agregar o quitar sin tocar index.html
             const avisos = document.querySelector('.right');
@@ -126,38 +142,111 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ==========================
-    // INFORMACIÓN: PERSONAL FIJO
+    // PARTES FIJAS DE LA PÁGINA (escudo, portada, cifras, lema y pie de página)
     // ==========================
-    // ✏️ RELLENAR: cambia lo que está entre [corchetes]. Para agregar a alguien, copia un bloque { ... }, con su coma.
-    // La foto va en imagenes-sitio/personal/ (por ejemplo 'imagenes-sitio/personal/rectora.jpg').
-    // Si no tiene foto, deja photo: '' y se muestra la inicial del nombre.
-    const personalFijo = [
-        { name: '[Nombre completo]', cargo: 'Rector(a)', photo: '', descripcion: '[Una frase sobre su labor o su formación]' },
-        { name: '[Nombre completo]', cargo: 'Coordinador(a) académico', photo: '', descripcion: '[Una frase sobre su labor o su formación]' },
-        { name: '[Nombre completo]', cargo: 'Coordinador(a) de convivencia', photo: '', descripcion: '[Una frase sobre su labor o su formación]' },
-        { name: '[Nombre completo]', cargo: 'Orientador(a) escolar', photo: '', descripcion: '[Una frase sobre su labor o su formación]' },
-        { name: '[Nombre completo]', cargo: 'Secretaría académica', photo: '', descripcion: '[Una frase sobre su labor o su formación]' },
-        { name: '[Nombre completo]', cargo: 'Tesorería', photo: '', descripcion: '[Una frase sobre su labor o su formación]' }
-    ];
+    // Están en index.html, fuera de las secciones; aquí se llenan con lo que se guardó en el panel.
+    function ponerTexto(selector, texto) {
+        document.querySelectorAll(selector).forEach((elemento) => { elemento.textContent = texto; });
+    }
 
-    // ==========================
-    // INFORMACIÓN: SOBRE EL COLEGIO
-    // ==========================
-    // ✏️ RELLENAR: cambia el texto entre [corchetes]. Se pueden agregar o borrar tarjetas.
-    // icono: nombre de un ícono de https://icons.getbootstrap.com (por ejemplo 'bi-book', 'bi-calendar-event').
-    const infoColegio = [
-        { icono: 'bi-hourglass-split', titulo: 'Nuestra historia', texto: '[Cuándo y cómo se fundó el colegio, y quién lo fundó.]' },
-        { icono: 'bi-clock', titulo: 'Jornada y horarios', texto: '[Jornada (mañana, tarde, única) y horario de entrada y salida.]' },
-        { icono: 'bi-mortarboard', titulo: 'Niveles que ofrecemos', texto: '[Por ejemplo: preescolar, básica primaria, básica secundaria y media.]' },
-        { icono: 'bi-clipboard-check', titulo: 'Admisiones', texto: '[Pasos y documentos para matricular a un estudiante, y fechas de inscripción.]' },
-        { icono: 'bi-person-badge', titulo: 'Uniformes', texto: '[Cómo es el uniforme de diario y el de educación física, y dónde se consigue.]' },
-        { icono: 'bi-award', titulo: 'Reconocimientos', texto: '[Premios, resultados en las pruebas Saber u otros logros del colegio.]' }
-    ];
+    function pintarPartesFijas() {
+        const institution = publicContent.institution || {};
+        const nombre = institution.name || 'Instituto Santa Ana Luz del Carmen';
+
+        // identidad: nombre corto del menú y escudo
+        ponerTexto('.marca__nombre', institution.shortName || 'Santa Ana');
+        ponerTexto('.marca__sub', institution.subtitle || 'Luz del Carmen');
+        ponerTexto('.nombre-colegio', nombre);
+        const escudo = fotoUrl(institution.escudo, 'imagenes-sitio');
+        if (escudo) {
+            document.querySelectorAll('.marca__escudo').forEach((img) => {
+                img.onerror = () => { img.hidden = true; };
+                img.hidden = false;
+                img.src = escudo;
+            });
+            const favicon = document.getElementById('favicon');
+            if (favicon) favicon.href = escudo;
+        }
+
+        // portada
+        const portada = fotoUrl(institution.portada, 'imagenes-sitio');
+        const seccionPortada = document.getElementById('portada');
+        if (portada && seccionPortada) seccionPortada.style.setProperty('--foto-portada', `url("${encodeURI(portada)}")`);
+
+        // cifras
+        const cifras = document.getElementById('cifras');
+        if (cifras) {
+            const lista = publicContent.cifras.filter((cifra) => cifra.numero || cifra.texto);
+            cifras.innerHTML = lista.map((cifra) => `<div class="cifra"><strong>${escapeHtml(cifra.numero || '')}</strong><span>${escapeHtml(cifra.texto || '')}</span></div>`).join('');
+            cifras.classList.toggle('vacio', lista.length === 0);
+        }
+
+        // lema: si no hay texto no se muestra
+        const lema = publicContent.lema || {};
+        const seccionLema = document.getElementById('lema');
+        if (seccionLema) {
+            ponerTexto('#lema-texto', lema.texto || '');
+            ponerTexto('#lema-autor', lema.autor || '');
+            seccionLema.classList.toggle('vacio', !lema.texto);
+        }
+
+        // pie de página: frase, contacto y redes
+        const contacto = publicContent.contacto || {};
+        const legal = publicContent.legal || {};
+        const frase = document.getElementById('pie-frase');
+        if (frase) {
+            frase.textContent = contacto.frase || '';
+            frase.hidden = !contacto.frase;
+        }
+
+        const lugar = [legal.direccion, legal.ciudad].filter(Boolean).join(', ');
+        const datosContacto = [
+            ['bi-geo-alt-fill', lugar],
+            ['bi-telephone-fill', legal.telefono],
+            ['bi-envelope-fill', contacto.correo || legal.correo],
+            ['bi-clock-fill', contacto.horario]
+        ].filter(([, valor]) => valor);
+        const listaContacto = document.getElementById('pie-contacto');
+        if (listaContacto) {
+            listaContacto.innerHTML = datosContacto.length
+                ? datosContacto.map(([icono, valor]) => `<li><i class="bi ${icono}"></i> ${escapeHtml(valor)}</li>`).join('')
+                : '<li>Pronto publicaremos los datos de contacto.</li>';
+        }
+
+        const redes = publicContent.redes || {};
+        const nombresRedes = { facebook: 'Facebook', instagram: 'Instagram', youtube: 'YouTube', tiktok: 'TikTok', whatsapp: 'WhatsApp' };
+        const enlaces = Object.entries(nombresRedes)
+            .map(([red, etiqueta]) => [red, etiqueta, enlaceSeguro(redes[red], red === 'whatsapp')])
+            .filter(([, , url]) => url);
+        const contenedorRedes = document.getElementById('pie-redes');
+        const bloqueRedes = document.getElementById('pie-redes-bloque');
+        if (contenedorRedes) {
+            contenedorRedes.innerHTML = enlaces.map(([red, etiqueta, url]) =>
+                `<a href="${escapeHtml(url)}" aria-label="${etiqueta}" target="_blank" rel="noopener"><i class="bi bi-${red}"></i></a>`).join('');
+        }
+        if (bloqueRedes) bloqueRedes.hidden = enlaces.length === 0;
+
+        // datos para Google (tipo de página "colegio"), con el contacto que se llenó en el panel
+        const datosGoogle = document.querySelector('script[type="application/ld+json"]');
+        if (datosGoogle) {
+            try {
+                const datos = JSON.parse(datosGoogle.textContent);
+                datos.name = nombre;
+                if (legal.telefono) datos.telephone = legal.telefono;
+                if (contacto.correo || legal.correo) datos.email = contacto.correo || legal.correo;
+                if (legal.direccion) datos.address = { '@type': 'PostalAddress', streetAddress: legal.direccion, addressLocality: legal.ciudad || '', addressCountry: 'CO' };
+                if (escudo.startsWith('https://')) datos.logo = escudo;
+                if (portada.startsWith('https://')) datos.image = portada;
+                datosGoogle.textContent = JSON.stringify(datos);
+            } catch (error) { /* si el bloque no es JSON válido se deja como está */ }
+        }
+    }
 
     function renderPersonaCard(persona) {
         const name = escapeHtml(persona.name || '');
-        const foto = persona.photo
-            ? `<img src="${escapeHtml(persona.photo)}" alt="${name}" loading="lazy">`
+        const fotoPersona = fotoUrl(persona.photo, 'imagenes-sitio/personal');
+        const foto = fotoPersona
+            ? `<img src="${escapeHtml(fotoPersona)}" alt="${name}" loading="lazy">`
             : `<span>${escapeHtml((persona.name || '').replace(/[^\p{L}]/gu, '').charAt(0) || '?')}</span>`;
 
         return `
@@ -173,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderInfoCard(info) {
         return `
             <article class="info-card">
-                <i class="bi ${escapeHtml(info.icono || 'bi-info-circle')}" aria-hidden="true"></i>
+                <i class="bi ${/^bi-[a-z0-9-]+$/.test(info.icono || '') ? info.icono : 'bi-info-circle'}" aria-hidden="true"></i>
                 <h3>${escapeHtml(info.titulo || '')}</h3>
                 <p>${escapeHtml(info.texto || '')}</p>
             </article>
@@ -406,14 +495,14 @@ document.addEventListener('DOMContentLoaded', function () {
             <section class="section-card">
                 <h2>Nuestro equipo</h2>
                 <div class="personal-grid">
-                    ${personalFijo.map(renderPersonaCard).join('')}
+                    ${publicContent.personal.map(renderPersonaCard).join('') || '<p>Aún no hay información para mostrar.</p>'}
                 </div>
             </section>
 
             <section class="section-card">
                 <h2>Sobre el colegio</h2>
                 <div class="info-grid">
-                    ${infoColegio.map(renderInfoCard).join('')}
+                    ${publicContent.infoColegio.map(renderInfoCard).join('') || '<p>Aún no hay información para mostrar.</p>'}
                 </div>
             </section>
         `,

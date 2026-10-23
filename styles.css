@@ -88,6 +88,12 @@
     display: none !important;
 }
 
+/* partes de Inicio que se dejaron vacías en el panel (cifras o lema) */
+.cifras.vacio,
+.lema.vacio {
+    display: none !important;
+}
+
 h1, h2, h3,
 .cifra strong,
 .lema blockquote p,

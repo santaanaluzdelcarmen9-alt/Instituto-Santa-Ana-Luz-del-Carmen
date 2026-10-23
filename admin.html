@@ -25,6 +25,199 @@
                 <button id="logout-button" class="secondary">Cerrar sesión</button>
             </header>
 
+            <!-- índice: el panel va en el mismo orden que el menú de la página -->
+            <nav class="admin-indice panel" aria-label="Partes del panel">
+                <p class="hint">Ir a:</p>
+                <a href="#p-identidad">Identidad</a>
+                <a href="#p-inicio">Inicio</a>
+                <a href="#p-avisos">Avisos</a>
+                <a href="#p-actividades">Actividades</a>
+                <a href="#p-academico">Académico</a>
+                <a href="#p-instalaciones">Instalaciones</a>
+                <a href="#p-docentes">Docentes</a>
+                <a href="#p-noticias">Noticias</a>
+                <a href="#p-galeria">Galería</a>
+                <a href="#p-informacion">Información</a>
+                <a href="#p-pie">Pie de página y contacto</a>
+                <a href="#p-legal">Datos legales</a>
+                <a href="#p-accesos" class="admin-indice__accesos">Accesos y configuración</a>
+            </nav>
+
+            <form id="content-form">
+                <p id="contenido-inicial" class="panel hint" hidden>Este es el contenido inicial del sitio. Revísalo y pulsa <strong>Guardar cambios</strong> para publicarlo.</p>
+
+                <!-- 1. IDENTIDAD -->
+                <section class="panel" id="p-identidad">
+                    <p class="eyebrow">1 · Identidad del colegio</p>
+                    <h2>Nombre y escudo</h2>
+                    <p class="hint">Se usan en el menú, en la portada, en el pie de página y en las páginas legales.</p>
+                    <div data-foto="institution.escudo" data-carpeta="sitio" data-etiqueta="Escudo (mejor PNG con fondo transparente)"></div>
+                    <div class="form-grid">
+                        <label class="wide">Nombre completo del colegio<input name="institution.name" required></label>
+                        <label>Nombre corto (menú)<input name="institution.shortName" placeholder="Santa Ana"></label>
+                        <label>Segunda línea (menú)<input name="institution.subtitle" placeholder="Luz del Carmen"></label>
+                    </div>
+                </section>
+
+                <!-- 2. INICIO -->
+                <section class="panel" id="p-inicio">
+                    <p class="eyebrow">2 · Inicio</p>
+                    <h2>Portada</h2>
+                    <p class="hint">La foto grande del inicio: horizontal, de mínimo 1600 px de ancho. Si salen estudiantes reconocibles, se necesita la autorización de sus acudientes.</p>
+                    <div data-foto="institution.portada" data-carpeta="sitio" data-etiqueta="Foto de portada"></div>
+                    <div class="form-grid">
+                        <label>Sello (texto pequeño sobre el nombre)<input name="institution.badge" placeholder="Educación integral"></label>
+                        <label class="wide">Descripción corta<textarea name="institution.description" rows="3"></textarea></label>
+                    </div>
+
+                    <div class="subpanel">
+                        <div class="section-heading"><h3>Cifras del colegio</h3><button type="button" class="secondary" data-agregar="cifras">Añadir cifra</button></div>
+                        <p class="hint">Los números que se ven debajo de la portada. Si borras todas, no se muestran.</p>
+                        <div data-lista="cifras"></div>
+                    </div>
+
+                    <div class="subpanel">
+                        <h3>Misión, visión, valores y manual</h3>
+                        <div class="form-grid">
+                            <label class="wide">Misión<textarea name="sections.inicio.mission" rows="3"></textarea></label>
+                            <label class="wide">Visión<textarea name="sections.inicio.vision" rows="3"></textarea></label>
+                            <label class="wide">Valores<textarea name="sections.inicio.values" rows="3"></textarea></label>
+                            <label class="wide">Manual<textarea name="sections.inicio.manual" rows="3"></textarea></label>
+                        </div>
+                    </div>
+
+                    <div class="subpanel">
+                        <h3>Lema</h3>
+                        <p class="hint">La frase que aparece al final del inicio. Si la dejas vacía, no se muestra.</p>
+                        <div class="form-grid">
+                            <label class="wide">Lema o frase<textarea name="lema.texto" rows="2"></textarea></label>
+                            <label>Autor<input name="lema.autor" placeholder="Lema institucional"></label>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. AVISOS -->
+                <section class="panel" id="p-avisos">
+                    <p class="eyebrow">3 · Avisos (columna derecha)</p>
+                    <div class="section-heading"><h2>Avisos</h2><button type="button" class="secondary" data-agregar="notices">Añadir aviso</button></div>
+                    <div data-lista="notices"></div>
+                </section>
+
+                <!-- 4. ACTIVIDADES -->
+                <section class="panel" id="p-actividades">
+                    <p class="eyebrow">4 · Actividades</p>
+                    <h2>Actividades</h2>
+                    <label>Texto de la sección<textarea name="sections.Actividades" rows="4"></textarea></label>
+                </section>
+
+                <!-- 5. ACADÉMICO -->
+                <section class="panel" id="p-academico">
+                    <p class="eyebrow">5 · Académico</p>
+                    <h2>Académico</h2>
+                    <label>Texto de la sección<textarea name="sections.academico" rows="5"></textarea></label>
+                </section>
+
+                <!-- 6. INSTALACIONES -->
+                <section class="panel" id="p-instalaciones">
+                    <p class="eyebrow">6 · Instalaciones</p>
+                    <div class="section-heading"><h2>Fichas de instalaciones</h2><button type="button" class="secondary" data-agregar="instalaciones">Añadir instalación</button></div>
+                    <div data-lista="instalaciones"></div>
+                </section>
+
+                <!-- 7. DOCENTES -->
+                <section class="panel" id="p-docentes">
+                    <p class="eyebrow">7 · Docentes</p>
+                    <div class="section-heading"><h2>Fichas de docentes</h2><button type="button" class="secondary" data-agregar="docentes">Añadir docente</button></div>
+                    <p class="hint">El número de orden decide la posición de cada ficha.</p>
+                    <div data-lista="docentes"></div>
+                </section>
+
+                <!-- 8. NOTICIAS -->
+                <section class="panel" id="p-noticias">
+                    <p class="eyebrow">8 · Noticias</p>
+                    <div class="section-heading"><h2>Noticias</h2><button type="button" class="secondary" data-agregar="noticias">Añadir noticia</button></div>
+                    <p class="hint">Cada noticia es una imagen (por ejemplo, un afiche) con su título.</p>
+                    <div data-lista="noticias"></div>
+                </section>
+
+                <!-- 9. GALERÍA -->
+                <section class="panel" id="p-galeria">
+                    <p class="eyebrow">9 · Galería</p>
+                    <div class="section-heading">
+                        <h2>Galería de fotos</h2>
+                        <label class="file-picker">
+                            <input type="file" accept="image/*,.heic" multiple data-subir-varias="galeria">
+                            <span class="file-button">Subir fotos</span>
+                        </label>
+                    </div>
+                    <p class="hint">Puedes elegir varias fotos a la vez. Publica fotos de estudiantes solo con autorización de sus padres o acudientes.</p>
+                    <div data-lista="galeria"></div>
+                </section>
+
+                <!-- 10. INFORMACIÓN -->
+                <section class="panel" id="p-informacion">
+                    <p class="eyebrow">10 · Información</p>
+                    <h2>Información institucional</h2>
+                    <label>Texto de introducción<textarea name="sections.contacto" rows="4"></textarea></label>
+
+                    <div class="subpanel">
+                        <div class="section-heading"><h3>Nuestro equipo</h3><button type="button" class="secondary" data-agregar="personal">Añadir persona</button></div>
+                        <p class="hint">Rectoría, coordinaciones, orientación, secretaría... El número de orden decide la posición.</p>
+                        <div data-lista="personal"></div>
+                    </div>
+
+                    <div class="subpanel">
+                        <div class="section-heading"><h3>Sobre el colegio</h3><button type="button" class="secondary" data-agregar="infoColegio">Añadir tarjeta</button></div>
+                        <p class="hint">Historia, horarios, niveles, admisiones, uniformes, reconocimientos...</p>
+                        <div data-lista="infoColegio"></div>
+                    </div>
+                </section>
+
+                <!-- 11. PIE DE PÁGINA -->
+                <section class="panel" id="p-pie">
+                    <p class="eyebrow">11 · Pie de página y contacto</p>
+                    <h2>Contacto</h2>
+                    <p class="hint">Se ve al final de todas las páginas. La dirección, la ciudad y el teléfono también se usan en las páginas legales.</p>
+                    <div class="form-grid">
+                        <label class="wide">Frase sobre el colegio<textarea name="contacto.frase" rows="2"></textarea></label>
+                        <label>Dirección<input name="legal.direccion"></label>
+                        <label>Ciudad<input name="legal.ciudad" placeholder="Bogotá"></label>
+                        <label>Teléfono<input name="legal.telefono"></label>
+                        <label>Correo del colegio<input name="contacto.correo" type="email"></label>
+                        <label class="wide">Horario de atención<input name="contacto.horario" placeholder="Lunes a viernes, 7:00 a. m. a 3:00 p. m."></label>
+                    </div>
+
+                    <div class="subpanel">
+                        <h3>Redes sociales</h3>
+                        <p class="hint">Pega el enlace completo (empieza por https://). En WhatsApp puedes poner solo el número de celular. Las que dejes vacías no se muestran.</p>
+                        <div class="form-grid">
+                            <label>Facebook<input name="redes.facebook" type="url" placeholder="https://facebook.com/..."></label>
+                            <label>Instagram<input name="redes.instagram" type="url" placeholder="https://instagram.com/..."></label>
+                            <label>YouTube<input name="redes.youtube" type="url" placeholder="https://youtube.com/..."></label>
+                            <label>TikTok<input name="redes.tiktok" type="url" placeholder="https://tiktok.com/@..."></label>
+                            <label>WhatsApp<input name="redes.whatsapp" placeholder="3001234567"></label>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 12. DATOS LEGALES -->
+                <section class="panel" id="p-legal">
+                    <p class="eyebrow">12 · Datos legales</p>
+                    <h2>Datos legales del colegio</h2>
+                    <p class="hint">Aparecen en la Política de tratamiento de datos, los Términos y condiciones y el Aviso de imágenes, junto con la dirección, la ciudad y el teléfono de "Contacto". Mientras estén vacíos, la página muestra [corchetes] en su lugar.</p>
+                    <div class="form-grid">
+                        <label>NIT<input name="legal.nit" placeholder="900.123.456-7"></label>
+                        <label>Correo para temas de datos personales<input name="legal.correo" type="email"></label>
+                        <label>Fecha de la última actualización<input name="legal.actualizado" type="date"></label>
+                    </div>
+                </section>
+
+                <div class="save-bar"><span id="save-message" class="message"></span><button type="submit">Guardar cambios</button></div>
+            </form>
+
+            <!-- ACCESOS Y CONFIGURACIÓN (no son contenido de la página) -->
+            <h2 class="admin-separador" id="p-accesos">Accesos y configuración</h2>
+
             <section class="panel">
                 <h2>Directivas</h2>
                 <p class="hint">Estas cuentas de Google pueden entrar a este panel. La cuenta principal del colegio siempre puede entrar, aunque no esté en la lista.</p>
@@ -64,81 +257,6 @@
                 </form>
                 <p id="cloudinary-message" class="message"></p>
             </section>
-
-            <form id="content-form">
-                <p id="contenido-inicial" class="panel hint" hidden>Este es el contenido inicial del sitio. Revísalo y pulsa <strong>Guardar cambios</strong> para publicarlo.</p>
-
-                <section class="panel">
-                    <h2>Información principal</h2>
-                    <div class="form-grid">
-                        <label>Nombre del instituto<input name="institution.name" required></label>
-                        <label>Etiqueta<input name="institution.badge"></label>
-                        <label class="wide">Descripción<textarea name="institution.description" rows="3"></textarea></label>
-                    </div>
-                </section>
-
-                <section class="panel">
-                    <h2>Datos legales del colegio</h2>
-                    <p class="hint">Aparecen en la Política de tratamiento de datos, los Términos y condiciones y el Aviso de imágenes. Mientras estén vacíos, la página muestra [corchetes] en su lugar.</p>
-                    <div class="form-grid">
-                        <label>NIT<input name="legal.nit" placeholder="900.123.456-7"></label>
-                        <label>Teléfono<input name="legal.telefono"></label>
-                        <label>Dirección<input name="legal.direccion"></label>
-                        <label>Ciudad<input name="legal.ciudad" placeholder="Bogotá"></label>
-                        <label>Correo para temas de datos personales<input name="legal.correo" type="email"></label>
-                        <label>Fecha de la última actualización<input name="legal.actualizado" type="date"></label>
-                    </div>
-                </section>
-
-                <section class="panel">
-                    <h2>Secciones del sitio</h2>
-                    <div class="form-grid">
-                        <label class="wide">Misión<textarea name="section.inicio.mission" rows="3"></textarea></label>
-                        <label class="wide">Visión<textarea name="section.inicio.vision" rows="3"></textarea></label>
-                        <label class="wide">Valores<textarea name="section.inicio.values" rows="3"></textarea></label>
-                        <label class="wide">Manual<textarea name="section.inicio.manual" rows="3"></textarea></label>
-                        <label class="wide">Actividades<textarea name="section.Actividades" rows="4"></textarea></label>
-                        <label class="wide">Académico<textarea name="section.academico" rows="4"></textarea></label>
-                        <label class="wide">Información (texto de introducción)<textarea name="section.contacto" rows="4"></textarea></label>
-                    </div>
-                </section>
-
-                <section class="panel">
-                    <div class="section-heading"><h2>Avisos</h2><button type="button" class="secondary" data-agregar="notices">Añadir aviso</button></div>
-                    <div data-lista="notices"></div>
-                </section>
-
-                <section class="panel">
-                    <div class="section-heading"><h2>Instalaciones</h2><button type="button" class="secondary" data-agregar="instalaciones">Añadir instalación</button></div>
-                    <div data-lista="instalaciones"></div>
-                </section>
-
-                <section class="panel">
-                    <div class="section-heading">
-                        <h2>Galería de fotos</h2>
-                        <label class="file-picker">
-                            <input type="file" accept="image/*,.heic" multiple data-subir-varias="galeria">
-                            <span class="file-button">Subir fotos</span>
-                        </label>
-                    </div>
-                    <p class="hint">Puedes elegir varias fotos a la vez. Publica fotos de estudiantes solo con autorización de sus padres o acudientes.</p>
-                    <div data-lista="galeria"></div>
-                </section>
-
-                <section class="panel">
-                    <div class="section-heading"><h2>Noticias</h2><button type="button" class="secondary" data-agregar="noticias">Añadir noticia</button></div>
-                    <p class="hint">Cada noticia es una imagen (por ejemplo, un afiche) con su título.</p>
-                    <div data-lista="noticias"></div>
-                </section>
-
-                <section class="panel">
-                    <div class="section-heading"><h2>Docentes</h2><button type="button" class="secondary" data-agregar="docentes">Añadir docente</button></div>
-                    <p class="hint">El número de orden decide la posición de cada ficha.</p>
-                    <div data-lista="docentes"></div>
-                </section>
-
-                <div class="save-bar"><span id="save-message" class="message"></span><button type="submit">Guardar cambios</button></div>
-            </form>
         </section>
     </main>
 
