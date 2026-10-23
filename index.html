@@ -9,7 +9,7 @@
     <meta name="description" content="Sitio oficial del Instituto Santa Ana Luz del Carmen: información académica, docentes, instalaciones, noticias, galería, avisos e inscripciones.">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://santa-ana-web-e9f0f.web.app/">
-    <link rel="icon" href="imagenes-sitio/escudo.png" type="image/png">
+    <link rel="icon" id="favicon" href="imagenes-sitio/escudo.png" type="image/png">
     <meta name="theme-color" content="#1a4d8f">
 
     <!-- vista previa cuando se comparte el enlace por WhatsApp, Facebook, etc. -->
@@ -22,8 +22,8 @@
     <meta property="og:image" content="https://santa-ana-web-e9f0f.web.app/imagenes-sitio/portada.jpg">
     <meta name="twitter:card" content="summary_large_image">
 
-    <!-- le dice a Google que esta página es de un colegio. ✏️ RELLENAR: cuando tengas los datos reales, agrega
-         "telephone", "email" y "address" (con "streetAddress" y "addressLocality") dentro de este bloque. -->
+    <!-- le dice a Google que esta página es de un colegio. El teléfono, el correo y la dirección se agregan solos
+         con lo que se llene en el panel (Pie de página y contacto). -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
@@ -40,10 +40,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 </head>
 <body>
-    <!--
-        ✏️ RELLENAR: todo lo que está entre [corchetes] en este archivo es para reemplazar con los datos reales.
-        Busca "RELLENAR" (Ctrl+F) para encontrar cada espacio.
-    -->
+    <!-- Todo el texto y las fotos de esta página se cambian desde el panel de directivas (admin.html).
+         Lo que está escrito aquí solo se ve un instante, mientras carga el contenido. -->
 
     <!-- las tres columnas van en su propia caja: así el menú y los avisos se detienen antes del pie de página -->
     <div class="columnas">
@@ -52,13 +50,12 @@
     <aside class="sidebar">
         <div class="sidebar__top">
             <a href="#inicio" class="marca ir-a" data-section="inicio">
-                <!-- ✏️ RELLENAR: guarda el escudo como imagenes-sitio/escudo.png (mejor PNG con fondo transparente).
-                     Mientras no exista, se muestra el círculo con las letras "SA". -->
+                <!-- el escudo se sube en el panel (Identidad). Mientras no haya, se muestra el círculo con las letras "SA". -->
                 <img class="marca__escudo" src="imagenes-sitio/escudo.png" alt="Escudo del Instituto Santa Ana Luz del Carmen" onerror="this.hidden = true">
                 <span class="marca__respaldo" aria-hidden="true">SA</span>
                 <span class="marca__texto">
-                    <strong>Santa Ana</strong>
-                    <small>Luz del Carmen</small>
+                    <strong class="marca__nombre">Santa Ana</strong>
+                    <small class="marca__sub">Luz del Carmen</small>
                 </span>
             </a>
 
@@ -84,9 +81,8 @@
     <!-- COLUMNA CENTRAL -->
     <main>
         <!-- PORTADA: foto grande con el nombre. Solo se ve en Inicio. -->
-        <!-- ✏️ RELLENAR: guarda la foto de portada como imagenes-sitio/portada.jpg (horizontal, mínimo 1600 px de ancho).
-             Mientras no exista, se ve un fondo azul. Si salen estudiantes reconocibles, necesitas la autorización de los acudientes. -->
-        <section class="page-header solo-inicio" style="--foto-portada: url('imagenes-sitio/portada.jpg')">
+        <!-- la foto de portada se sube en el panel (Inicio → Portada). Mientras no haya, se ve un fondo azul. -->
+        <section class="page-header solo-inicio" id="portada" style="--foto-portada: url('imagenes-sitio/portada.jpg')">
             <div class="page-header__content">
                 <!-- el sello, el nombre y la descripción se cambian desde el panel de directivas -->
                 <span class="page-header__badge">Educación integral</span>
@@ -100,8 +96,8 @@
         </section>
 
         <!-- CIFRAS DEL COLEGIO. Solo se ven en Inicio. -->
-        <!-- ✏️ RELLENAR: cambia cada [00] por el número real y, si quieres, el texto de abajo -->
-        <section class="cifras solo-inicio" aria-label="El colegio en cifras">
+        <!-- las cifras se cambian en el panel (Inicio → Cifras) -->
+        <section class="cifras solo-inicio" id="cifras" aria-label="El colegio en cifras">
             <div class="cifra"><strong>[00]</strong><span>Años de historia</span></div>
             <div class="cifra"><strong>[00]</strong><span>Estudiantes</span></div>
             <div class="cifra"><strong>[00]</strong><span>Docentes</span></div>
@@ -111,11 +107,11 @@
         <div id="content-panel" class="content-panel"></div>
 
         <!-- LEMA DEL COLEGIO. Solo se ve en Inicio. -->
-        <section class="lema solo-inicio">
-            <!-- ✏️ RELLENAR: el lema o una frase que represente al colegio, y quién la dijo (o bórralo si no aplica) -->
+        <!-- el lema se cambia en el panel (Inicio → Lema). Si se deja vacío, no se muestra. -->
+        <section class="lema solo-inicio" id="lema">
             <blockquote>
-                <p>[Lema del colegio]</p>
-                <cite>[Autor o "Lema institucional"]</cite>
+                <p id="lema-texto">[Lema del colegio]</p>
+                <cite id="lema-autor">[Autor o "Lema institucional"]</cite>
             </blockquote>
         </section>
     </main>
@@ -147,18 +143,17 @@
                     <img class="marca__escudo" src="imagenes-sitio/escudo.png" alt="" onerror="this.hidden = true">
                     <span class="marca__respaldo" aria-hidden="true">SA</span>
                     <span class="marca__texto">
-                        <strong>Santa Ana</strong>
-                        <small>Luz del Carmen</small>
+                        <strong class="marca__nombre">Santa Ana</strong>
+                        <small class="marca__sub">Luz del Carmen</small>
                     </span>
                 </div>
-                <!-- ✏️ RELLENAR: una o dos frases sobre el colegio -->
-                <p>[Frase corta que describa al colegio, por ejemplo su enfoque o su historia.]</p>
+                <!-- la frase y el contacto se cambian en el panel (Pie de página y contacto) -->
+                <p id="pie-frase">[Frase corta que describa al colegio, por ejemplo su enfoque o su historia.]</p>
             </div>
 
             <div>
                 <h3>Contacto</h3>
-                <!-- ✏️ RELLENAR: datos de contacto del colegio -->
-                <ul class="site-footer__lista">
+                <ul class="site-footer__lista" id="pie-contacto">
                     <li><i class="bi bi-geo-alt-fill"></i> [Dirección del colegio], [Ciudad]</li>
                     <li><i class="bi bi-telephone-fill"></i> [Teléfono del colegio]</li>
                     <li><i class="bi bi-envelope-fill"></i> [correo@colegio.edu.co]</li>
@@ -177,10 +172,10 @@
                 </ul>
             </div>
 
-            <div>
+            <div id="pie-redes-bloque">
                 <h3>Síguenos</h3>
-                <!-- ✏️ RELLENAR: cambia cada "#" por el enlace real de la red social. Borra las que el colegio no tenga. -->
-                <div class="site-footer__redes">
+                <!-- solo se ven las redes que tengan enlace en el panel -->
+                <div class="site-footer__redes" id="pie-redes">
                     <a href="#" aria-label="Facebook" target="_blank" rel="noopener"><i class="bi bi-facebook"></i></a>
                     <a href="#" aria-label="Instagram" target="_blank" rel="noopener"><i class="bi bi-instagram"></i></a>
                     <a href="#" aria-label="YouTube" target="_blank" rel="noopener"><i class="bi bi-youtube"></i></a>
@@ -190,7 +185,7 @@
         </div>
 
         <div class="site-footer__base">
-            <span>© <span id="anio-actual">2026</span> Instituto Santa Ana Luz del Carmen</span>
+            <span>© <span id="anio-actual">2026</span> <span class="nombre-colegio">Instituto Santa Ana Luz del Carmen</span></span>
             <nav class="legal-footer" aria-label="Información legal">
                 <a href="#privacidad" class="legal-link" data-section="privacidad">Política de tratamiento de datos</a>
                 <a href="#terminos" class="legal-link" data-section="terminos">Términos y condiciones</a>
