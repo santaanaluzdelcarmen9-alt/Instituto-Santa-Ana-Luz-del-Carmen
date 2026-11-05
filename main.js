@@ -630,7 +630,7 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'Dagoberto perez',
             photo: 'fotos-grado-once/docente1.jpg',
-            infografia: 'Carismático, alegre y trabajador, siempre buscando lo mejor para sus estudiantes, defensor de quienes lo necesitan y con una gran capacidad para escuchar y comprender, dispuesto a acompañarnos y apoyarnos en cada momento, dejando una huella especial en quienes han compartido esta etapa con él.',
+            infografia: "Profesor Dagoberto, gracias por guiarnos con autoridad, sabiduría y vocación. Su manera de enseñar y de vivir su profesión es un ejemplo que siempre vamos a admirar.",
             info: 'Curso: 11 · Documento: 9001',
             dedicatoria: ''
         },
@@ -644,21 +644,21 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'Juan Pablo Bautista Rodríguez',
             photo: 'fotos-grado-once/alumno1.jpg',
-            infografia: 'Infografía',
+            infografia: "Juan, desde octavo has sido mi mejor amigo. Estuviste en las buenas y en las malas, y nunca dejamos de entendernos. Sé que no siempre fui el amigo perfecto, pero valoro muchísimo tu amistad. Gracias por todo juano",
             info: 'Curso: 11 · Documento: 1001',
             profession: 'Futuro ingeniero de sistemas'
         },
         {
             name: 'Valery Sofía Bonaldy yepes',
             photo: 'fotos-grado-once/alumno2.jpg',
-            infografia: 'Gran personalidad, buena amiga y compañera, solidaria, valiente y con un gran estilo, siempre dispuesta a apoyar a quienes quiere, llena de sueños, metas y nuevos retos que está preparada para conquistar.',
+            infografia: "Valery, desde séptimo fuiste una persona muy especial para mí. Aunque nuestra historia tuvo momentos difíciles, siempre fuiste buena conmigo. Sé que no siempre estuve a la altura, pero agradezco de corazón todo lo que compartimos.",
             info: 'Curso: 11 · Documento: 1002',
             profession: 'Futura psicóloga'
         },
         {
             name: 'Nicolás Camen García ',
             photo: 'fotos-grado-once/alumno3.jpg',
-            infografia: 'Infografía',
+            infografia: "Nicolás, aunque no compartimos tanto, siempre me caíste muy bien. Se nota tu buen corazón y lo dedicado que eres. Sé que pude acercarme más, pero me alegra haberte tenido de compañero. Gracias por todo.",
             info: 'Curso: 11 · Documento: 1003',
             profession: 'Futuro ingeniero de sistemas'
         },
@@ -686,21 +686,21 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'Luis Carlos Domínguez truyol ',
             photo: 'fotos-grado-once/alumno7.jpg',
-            infografia: 'Infografía',
+            infografia: "Luis, aunque todos los años dejamos de hablar por una temporada siempre te agradecere por todas esas veces que me alegraste con nuestros chistes tontos y nos reíamos sin importar nada, estuvieron increíbles todas esas hamburguesas que comimos juntos mi niche",
             info: 'Curso: 11 · Documento: 1007',
             profession: 'Futuro'
         },
         {
             name: 'Jennyfer Valentina Espitia ladino',
             photo: 'fotos-grado-once/alumno8.jpg',
-            infografia: 'Extrovertida, cariñosa y llena de energía, un poquito ruidosa pero siempre con una sonrisa y una ocurrencia para compartir, amante del maquillaje y de los gatos, consciente de lo que quiere y de lo que la rodea, con un corazón dispuesto a escuchar, ayudar y hacer sentir bien a los demás, llena de sueños y metas por cumplir.',
+            infografia: "jennyfer, la amistad más sincera y transparente que he tenido gracias por recibirme en tu casa todas esas veces que se me quedó el casco de la moto encerrado en el colegio y hablábamos por horas",
             info: 'Curso: 11 · Documento: 1008',
             profession: 'Futura psicóloga'
         },
         {
             name: 'Yary yaneid Fajardo Cruz',
             photo: 'fotos-grado-once/alumno9.jpg',
-            infografia: 'Infografía',
+            infografia: "Yary, tuvimos la amistad en la que más nos entendimos en cosas que ni sabia y esos días fueron increíbles hablando mientras escuchábamos villancicos de cómo nos sentíamos, gracias por la curación que me hiciste el dia que me cai de la cicla y me recibiste en tu casa",
             info: 'Curso: 11 · Documento: 1009',
             profession: 'Futura'
         },
@@ -735,7 +735,7 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'John David Monroy tique',
             photo: 'fotos-grado-once/alumno14.jpg',
-            infografia: 'Corazón amable, extrovertido, muy alegre e inteligente, quiere mucho a sus amigos, siempre da lo mejor de sí, positivo y divertido, fan de Milo J, con muchas metas por alcanzar.',
+            infografia: "john, tienes el corazón más puro que conozco y eres la persona más inteligente, sabía que el día que decidí pedirte que hiciéramos el proyecto de grado en equipo iba a conocer ese niño que se esfuerza por que las cosas no solo salgan perfectas sino bonitas y eso se notó siempre en tus bailes y en tu ser.",
             info: 'Curso: 11 · Documento: 1014',
             profession: 'Futuro médico veterinario zootecnista'
         },
@@ -763,7 +763,7 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'Laura Alejandra Suárez giraldo ',
             photo: 'fotos-grado-once/alumno18.jpg',
-            infografia: 'Gran compañía, alegre, extrovertida y apasionada, le encanta compartir y salir con sus amigos, decidida y soñadora, siempre lucha por aquello que se propone y está construyendo el camino hacia sus sueños.',
+            infografia: "Laura, conocí a la persona más enérgica y chistosa con esas ocurrencias de un momento para otro no fui la mejor persona y pido perdón pero mas que nada agradezco la oportunidad de haber conocido una niña tan increíble.",
             info: 'Curso: 11 · Documento: 1018',
             profession: 'Futura negociadora internacional'
         },
@@ -798,7 +798,7 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'Samuel Mateo Yate Escobar',
             photo: 'fotos-grado-once/IMG-20260724-WA0139 - Copia.jpg',
-            infografia: 'Gran amigo, comprensivo, le gusta compartir con sus amigos, extrovertido, fanático de la F1, futuro emprendedor',
+            infografia: "les agradezco eternamente a mis compañeros por todos este tiempo y les pido perdón a cada uno porque se que cometí errores les deseo el mejor futuro y las mejores oportunidades a cada uno, los quiero a todos",
             info: 'Curso: 11 · CD: 1023',
             profession: 'Futuro ingeniero de sistemas'
         }
