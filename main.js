@@ -637,7 +637,7 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'Sandra pinilla',
             photo: 'fotos-grado-once/docente2.jpg',
-            infografia: 'Gran profesora, alegre, amable y siempre dispuesta a buscar lo mejor para sus estudiantes, resiliente y fuerte ante cada obstáculo, cariñosa, solidaria y defensora de quienes quiere, dejando una huella especial en cada persona que ha tenido la oportunidad de conocerla.',
+            infografia: "Profesora Sandra, gracias por su alegría, su amabilidad y por buscar siempre lo mejor para nosotros. Con su ejemplo nos enseñó a ser fuertes ante cada obstáculo, y su cariño y su manera de defender a quienes quiere dejaron una huella especial en todos los que tuvimos la suerte de conocerla.",
             info: 'Curso: 11 · Documento: 9002',
             dedicatoria: ''
         },
@@ -665,7 +665,7 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'Mariana Castro blanco ',
             photo: 'fotos-grado-once/alumno4.jpg',
-            infografia: 'Inteligente, estudiosa y responsable, apasionada por el baile, realista y constante con todo lo que se propone, una gran amiga y apoyo para quienes la rodean, alegre y dedicada, con sueños enormes y metas infinitas que la motivan a seguir creciendo y alcanzar todo aquello que se proponga.',
+            infografia: "Mariana es inteligente, estudiosa y responsable, y cuando baila se le nota la pasión. Realista y constante en todo lo que se propone, es una gran amiga y un apoyo para quienes la rodean. Tiene sueños enormes, y la alegría y la dedicación para alcanzar todo lo que se proponga.",
             info: 'Curso: 11 · Documento: 1004',
             profession: 'Futura ingeniera de sistemas'
         },
@@ -714,21 +714,21 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'María Camila López castiblanco',
             photo: 'fotos-grado-once/alumno11.jpg',
-            infografia: 'Alegre, carismática y con una personalidad que no pasa desapercibida, con gustos variados y siempre dispuesta a descubrir cosas nuevas, apoya incondicionalmente a sus amigos, valiente y fuerte ante cualquier desafío, respetuosa, solidaria y con una energía que hace especial cada momento.',
+            infografia: "María Camila tiene una personalidad que no pasa desapercibida. Alegre y carismática, siempre está dispuesta a descubrir cosas nuevas y apoya a sus amigos sin condiciones. Es valiente ante cualquier desafío, respetuosa y solidaria, y su energía hace especial cada momento.",
             info: 'Curso: 11 · Documento: 1011',
             profession: 'Futura'
         },
         {
             name: 'Laura carolina lozada Martínez',
             photo: 'fotos-grado-once/alumno12.jpg',
-            infografia: 'Carismática, responsable, amable y solidaria, con una personalidad alegre y un gran corazón, buena amiga y compañera, llena de sueños infinitos y nuevas experiencias por vivir, dejando su huella en cada paso que da.',
+            infografia: "Laura Carolina es carismática, responsable y solidaria, con una alegría que se contagia y un corazón enorme. Es una buena amiga y compañera, llena de sueños y de ganas de vivir nuevas experiencias, y deja su huella en cada paso que da.",
             info: 'Curso: 11 · Documento: 1012',
             profession: 'Futura'
         },
         {
             name: 'Julián David Mateus Amaya',
             photo: 'fotos-grado-once/alumno13.jpg',
-            infografia: 'Gran estilo y personalidad, siempre destacando por su forma de ser y su buena energía, gran amigo, alegre y con un ambiente que contagia a quienes lo rodean, fuerte y valiente ante los retos, con grandes metas y la determinación para hacerlas realidad.',
+            infografia: "Julián tiene un estilo y una personalidad que siempre lo hacen destacar. Su buena energía contagia a quienes lo rodean, y es un gran amigo, alegre y valiente ante los retos. Tiene grandes metas y la determinación para hacerlas realidad.",
             info: 'Curso: 11 · Documento: 1013',
             profession: 'Futuro'
         },
@@ -742,7 +742,7 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'Diego Ortega feria ',
             photo: 'fotos-grado-once/alumno15.jpg',
-            infografia: 'Extrovertido, alegre y espontáneo, divertido y carismático, siempre tiene una ocurrencia para hacer reír, le encanta compartir con sus amigos y convertir cualquier momento en una anécdota, viviendo cada experiencia al máximo.',
+            infografia: "Diego es extrovertido, alegre y espontáneo, y siempre tiene una ocurrencia para hacernos reír. Le encanta compartir con sus amigos y convertir cualquier momento en una anécdota, porque vive cada experiencia al máximo.",
             info: 'Curso: 11 · Documento: 1015',
             profession: 'Futuro'
         },
@@ -756,7 +756,7 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'María José salas Ruiz ',
             photo: 'fotos-grado-once/alumno17.jpg',
-            infografia: 'Gran amiga, carismática, responsable y deportista, con muchos sueños por cumplir, siempre comprometida con lo que se propone y con un gran corazón para sus amistades, disfrutando cada etapa mientras trabaja por aquello que desea.',
+            infografia: "María José es una gran amiga: carismática, responsable y deportista, con un corazón enorme para sus amistades. Tiene muchos sueños por cumplir y se compromete con todo lo que se propone, disfrutando cada etapa mientras trabaja por lo que desea.",
             info: 'Curso: 11 · Documento: 1017',
             profession: 'Futura repostera'
         },
@@ -777,21 +777,21 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'Kim mai lee Vanegas Rivas',
             photo: 'fotos-grado-once/alumno20.jpg',
-            infografia: 'Súper extrovertida, deportista, carismática y alegre, siempre dispuesta a compartir momentos divertidos, con un gran corazón y mucha sensibilidad, le gusta ayudar a quienes la rodean y está lista para cumplir cada una de sus metas.',
+            infografia: "Kim es súper extrovertida, deportista y alegre, y siempre está lista para compartir un buen momento. Detrás de esa energía hay un gran corazón y mucha sensibilidad: le gusta ayudar a quienes la rodean y está lista para cumplir cada una de sus metas.",
             info: 'Curso: 11 · Documento: 1020',
             profession: 'Futura gastrónoma'
         },
         {
             name: 'Daysi Vanesa Vega gallo ',
             photo: 'fotos-grado-once/alumno21.jpg',
-            infografia: 'Personalidad alegre, extrovertida y risueña, muy habladora, estudiosa e inteligente, con un corazón noble y siempre dispuesta a ayudar, amistosa, dedicada y llena de ilusiones que espera convertir en grandes logros.',
+            infografia: "Daysi es alegre, risueña y muy habladora, y además estudiosa e inteligente. Tiene un corazón noble y siempre está dispuesta a ayudar; es amistosa, dedicada y está llena de ilusiones que va a convertir en grandes logros.",
             info: 'Curso: 11 · Documento: 1021',
             profession: 'Futura'
         },
         {
             name: 'Duvan Velázquez ',
             photo: 'fotos-grado-once/alumno22.jpg',
-            infografia: 'Callado, introvertido y alegre, de pocas palabras pero con un gran sentido del humor, amable, tranquilo y comprensivo, disfruta compartir con las personas que quiere, buen amigo y con muchas aspiraciones que poco a poco hará realidad.',
+            infografia: "Duvan es de pocas palabras, pero tiene un gran sentido del humor. Tranquilo, amable y comprensivo, disfruta compartir con las personas que quiere y es un buen amigo. Tiene muchas aspiraciones, y poco a poco las va a hacer realidad.",
             info: 'Curso: 11 · Documento: 1022',
             profession: 'Futura ingeniera de sistemas'
         },
