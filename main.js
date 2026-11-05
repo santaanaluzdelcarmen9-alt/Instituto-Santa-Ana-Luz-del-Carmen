@@ -646,7 +646,7 @@ document.addEventListener('DOMContentLoaded', function () {
             photo: 'fotos-grado-once/alumno1.jpg',
             infografia: "Juan, desde octavo has sido mi mejor amigo. Estuviste en las buenas y en las malas, y nunca dejamos de entendernos. Sé que no siempre fui el amigo perfecto, pero valoro muchísimo tu amistad. Gracias por todo juano",
             info: 'Curso: 11 · Documento: 1001',
-            profession: 'Futuro ingeniero de sistemas'
+            profession: ""
         },
         {
             name: 'Valery Sofía Bonaldy yepes',
@@ -660,28 +660,28 @@ document.addEventListener('DOMContentLoaded', function () {
             photo: 'fotos-grado-once/alumno3.jpg',
             infografia: "Nicolás, aunque no compartimos tanto, siempre me caíste muy bien. Se nota tu buen corazón y lo dedicado que eres. Sé que pude acercarme más, pero me alegra haberte tenido de compañero. Gracias por todo.",
             info: 'Curso: 11 · Documento: 1003',
-            profession: 'Futuro ingeniero de sistemas'
+            profession: ""
         },
         {
             name: 'Mariana Castro blanco ',
             photo: 'fotos-grado-once/alumno4.jpg',
             infografia: "Mariana es inteligente, estudiosa y responsable, y cuando baila se le nota la pasión. Realista y constante en todo lo que se propone, es una gran amiga y un apoyo para quienes la rodean. Tiene sueños enormes, y la alegría y la dedicación para alcanzar todo lo que se proponga.",
             info: 'Curso: 11 · Documento: 1004',
-            profession: 'Futura ingeniera de sistemas'
+            profession: ""
         },
         {
             name: 'Ashley nicolle Choles soto ',
             photo: 'fotos-grado-once/alumno5.jpg',
-            infografia: "Ashley cierra esta etapa con su promoción y con un sueño claro: ser ingeniera de sistemas. Que el camino que empieza le traiga todo lo que se merece.",
+            infografia: "Ashley cierra esta etapa con su promoción y con un sueño claro: estudiar medicina. Que el camino que empieza le traiga todo lo que se merece.",
             info: 'Curso: 11 · Documento: 1005',
-            profession: 'Futura ingeniera de sistemas'
+            profession: "Futura médica"
         },
         {
             name: 'Laura Sofía Cupasachoa cabezas ',
             photo: 'fotos-grado-once/alumno6.jpg',
-            infografia: "Laura Sofía termina el colegio con la mirada puesta en ser ingeniera de sistemas. Que este nuevo camino le traiga muchos logros y que nunca deje de soñar en grande.",
+            infografia: "Laura Sofía termina el colegio con la mirada puesta en ser radióloga. Que este nuevo camino le traiga muchos logros y que nunca deje de soñar en grande.",
             info: 'Curso: 11 · Documento: 1006',
-            profession: 'Futura ingeniera de sistemas'
+            profession: "Futura radióloga"
         },
         {
             name: 'Luis Carlos Domínguez truyol ',
@@ -707,9 +707,9 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'Joseph Starly Gómez castellanos ',
             photo: 'fotos-grado-once/alumno10.jpg',
-            infografia: "Joseph cierra esta etapa con su promoción y con todo un futuro por delante. Que cada paso que dé de aquí en adelante lo acerque a lo que sueña.",
+            infografia: "Joseph cierra esta etapa con su promoción y con la meta de estudiar negocios internacionales. Que cada paso que dé de aquí en adelante lo acerque a lo que sueña.",
             info: 'Curso: 11 · Documento: 1010',
-            profession: 'Futuro'
+            profession: "Futuro profesional en negocios internacionales"
         },
         {
             name: 'María Camila López castiblanco',
@@ -749,9 +749,9 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'Vivian Johana quintero caceres',
             photo: 'fotos-grado-once/alumno16.jpg',
-            infografia: "Vivian se despide del colegio con un sueño claro: ser ingeniera de sistemas. Que este nuevo comienzo le traiga muchas alegrías y la lleve tan lejos como quiera llegar.",
+            infografia: "Vivian se despide del colegio con un sueño claro: ser tripulante de cabina. Que este nuevo comienzo le traiga muchas alegrías y la lleve tan lejos como quiera volar.",
             info: 'Curso: 11 · Documento: 1016',
-            profession: 'Futura ingeniera de sistemas'
+            profession: "Futura tripulante de cabina"
         },
         {
             name: 'María José salas Ruiz ',
@@ -770,9 +770,9 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'Matías tiempo Ávila ',
             photo: 'fotos-grado-once/alumno19.jpg',
-            infografia: "Matías termina esta etapa con la meta de ser ingeniero de sistemas. Que todo lo vivido en el colegio lo acompañe en el camino que ahora empieza.",
+            infografia: "Matías cierra esta etapa con su promoción y con todo un futuro por delante. Que todo lo vivido en el colegio lo acompañe en el camino que ahora empieza.",
             info: 'Curso: 11 · Documento: 1019',
-            profession: 'Futuro ingeniero de sistemas'
+            profession: ""
         },
         {
             name: 'Kim mai lee Vanegas Rivas',
@@ -793,7 +793,7 @@ document.addEventListener('DOMContentLoaded', function () {
             photo: 'fotos-grado-once/alumno22.jpg',
             infografia: "Duvan es de pocas palabras, pero tiene un gran sentido del humor. Tranquilo, amable y comprensivo, disfruta compartir con las personas que quiere y es un buen amigo. Tiene muchas aspiraciones, y poco a poco las va a hacer realidad.",
             info: 'Curso: 11 · Documento: 1022',
-            profession: 'Futura ingeniera de sistemas'
+            profession: ""
         },
         {
             name: 'Samuel Mateo Yate Escobar',
