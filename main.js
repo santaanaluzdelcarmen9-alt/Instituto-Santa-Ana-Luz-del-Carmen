@@ -635,13 +635,6 @@ document.addEventListener('DOMContentLoaded', function () {
             dedicatoria: ''
         },
         {
-            name: 'Sandra pinilla',
-            photo: 'fotos-grado-once/docente2.jpg',
-            infografia: "Profesora Sandra, gracias por su alegría, su amabilidad y por buscar siempre lo mejor para nosotros. Con su ejemplo nos enseñó a ser fuertes ante cada obstáculo, y su cariño y su manera de defender a quienes quiere dejaron una huella especial en todos los que tuvimos la suerte de conocerla.",
-            info: 'Curso: 11 · Documento: 9002',
-            dedicatoria: ''
-        },
-        {
             name: 'Juan Pablo Bautista Rodríguez',
             photo: 'fotos-grado-once/alumno1.jpg',
             infografia: "Juan, desde octavo has sido mi mejor amigo. Estuviste en las buenas y en las malas, y nunca dejamos de entendernos. Sé que no siempre fui el amigo perfecto, pero valoro muchísimo tu amistad. Gracias por todo juano",
