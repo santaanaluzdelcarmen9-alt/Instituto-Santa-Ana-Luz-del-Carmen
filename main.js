@@ -630,175 +630,168 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'Dagoberto perez',
             photo: 'fotos-grado-once/docente1.jpg',
-            infografia: 'Carismático, alegre y trabajador, siempre buscando lo mejor para sus estudiantes, defensor de quienes lo necesitan y con una gran capacidad para escuchar y comprender, dispuesto a acompañarnos y apoyarnos en cada momento, dejando una huella especial en quienes han compartido esta etapa con él.',
+            infografia: "Profesor Dagoberto, gracias por guiarnos con autoridad, sabiduría y vocación. Su manera de enseñar y de vivir su profesión es un ejemplo que siempre vamos a admirar.",
             info: 'Curso: 11 · Documento: 9001',
-            dedicatoria: ''
-        },
-        {
-            name: 'Sandra pinilla',
-            photo: 'fotos-grado-once/docente2.jpg',
-            infografia: 'Gran profesora, alegre, amable y siempre dispuesta a buscar lo mejor para sus estudiantes, resiliente y fuerte ante cada obstáculo, cariñosa, solidaria y defensora de quienes quiere, dejando una huella especial en cada persona que ha tenido la oportunidad de conocerla.',
-            info: 'Curso: 11 · Documento: 9002',
             dedicatoria: ''
         },
         {
             name: 'Juan Pablo Bautista Rodríguez',
             photo: 'fotos-grado-once/alumno1.jpg',
-            infografia: 'Infografía',
+            infografia: "Juan, desde octavo has sido mi mejor amigo. Estuviste en las buenas y en las malas, y nunca dejamos de entendernos. Sé que no siempre fui el amigo perfecto, pero valoro muchísimo tu amistad. Gracias por todo juano",
             info: 'Curso: 11 · Documento: 1001',
-            profession: 'Futuro ingeniero de sistemas'
+            profession: ""
         },
         {
             name: 'Valery Sofía Bonaldy yepes',
             photo: 'fotos-grado-once/alumno2.jpg',
-            infografia: 'Gran personalidad, buena amiga y compañera, solidaria, valiente y con un gran estilo, siempre dispuesta a apoyar a quienes quiere, llena de sueños, metas y nuevos retos que está preparada para conquistar.',
+            infografia: "Valery, desde séptimo fuiste una persona muy especial para mí. Aunque nuestra historia tuvo momentos difíciles, siempre fuiste buena conmigo. Sé que no siempre estuve a la altura, pero agradezco de corazón todo lo que compartimos.",
             info: 'Curso: 11 · Documento: 1002',
             profession: 'Futura psicóloga'
         },
         {
             name: 'Nicolás Camen García ',
             photo: 'fotos-grado-once/alumno3.jpg',
-            infografia: 'Infografía',
+            infografia: "Nicolás, aunque no compartimos tanto, siempre me caíste muy bien. Se nota tu buen corazón y lo dedicado que eres. Sé que pude acercarme más, pero me alegra haberte tenido de compañero. Gracias por todo.",
             info: 'Curso: 11 · Documento: 1003',
-            profession: 'Futuro ingeniero de sistemas'
+            profession: ""
         },
         {
             name: 'Mariana Castro blanco ',
             photo: 'fotos-grado-once/alumno4.jpg',
-            infografia: 'Inteligente, estudiosa y responsable, apasionada por el baile, realista y constante con todo lo que se propone, una gran amiga y apoyo para quienes la rodean, alegre y dedicada, con sueños enormes y metas infinitas que la motivan a seguir creciendo y alcanzar todo aquello que se proponga.',
+            infografia: "Mariana es inteligente, estudiosa y responsable, y cuando baila se le nota la pasión. Realista y constante en todo lo que se propone, es una gran amiga y un apoyo para quienes la rodean. Tiene sueños enormes, y la alegría y la dedicación para alcanzar todo lo que se proponga.",
             info: 'Curso: 11 · Documento: 1004',
-            profession: 'Futura ingeniera de sistemas'
+            profession: ""
         },
         {
             name: 'Ashley nicolle Choles soto ',
             photo: 'fotos-grado-once/alumno5.jpg',
-            infografia: 'Infografía',
+            infografia: "Ashley cierra esta etapa con su promoción y con un sueño claro: estudiar medicina. Que el camino que empieza le traiga todo lo que se merece.",
             info: 'Curso: 11 · Documento: 1005',
-            profession: 'Futura ingeniera de sistemas'
+            profession: "Futura médica"
         },
         {
             name: 'Laura Sofía Cupasachoa cabezas ',
             photo: 'fotos-grado-once/alumno6.jpg',
-            infografia: 'Infografía',
+            infografia: "Laura Sofía termina el colegio con la mirada puesta en ser radióloga. Que este nuevo camino le traiga muchos logros y que nunca deje de soñar en grande.",
             info: 'Curso: 11 · Documento: 1006',
-            profession: 'Futura ingeniera de sistemas'
+            profession: "Futura radióloga"
         },
         {
             name: 'Luis Carlos Domínguez truyol ',
             photo: 'fotos-grado-once/alumno7.jpg',
-            infografia: 'Infografía',
+            infografia: "Luis, aunque todos los años dejamos de hablar por una temporada siempre te agradecere por todas esas veces que me alegraste con nuestros chistes tontos y nos reíamos sin importar nada, estuvieron increíbles todas esas hamburguesas que comimos juntos mi niche",
             info: 'Curso: 11 · Documento: 1007',
             profession: 'Futuro'
         },
         {
             name: 'Jennyfer Valentina Espitia ladino',
             photo: 'fotos-grado-once/alumno8.jpg',
-            infografia: 'Extrovertida, cariñosa y llena de energía, un poquito ruidosa pero siempre con una sonrisa y una ocurrencia para compartir, amante del maquillaje y de los gatos, consciente de lo que quiere y de lo que la rodea, con un corazón dispuesto a escuchar, ayudar y hacer sentir bien a los demás, llena de sueños y metas por cumplir.',
+            infografia: "jennyfer, la amistad más sincera y transparente que he tenido gracias por recibirme en tu casa todas esas veces que se me quedó el casco de la moto encerrado en el colegio y hablábamos por horas",
             info: 'Curso: 11 · Documento: 1008',
             profession: 'Futura psicóloga'
         },
         {
             name: 'Yary yaneid Fajardo Cruz',
             photo: 'fotos-grado-once/alumno9.jpg',
-            infografia: 'Infografía',
+            infografia: "Yary, tuvimos la amistad en la que más nos entendimos en cosas que ni sabia y esos días fueron increíbles hablando mientras escuchábamos villancicos de cómo nos sentíamos, gracias por la curación que me hiciste el dia que me cai de la cicla y me recibiste en tu casa",
             info: 'Curso: 11 · Documento: 1009',
             profession: 'Futura'
         },
         {
             name: 'Joseph Starly Gómez castellanos ',
             photo: 'fotos-grado-once/alumno10.jpg',
-            infografia: 'Infografía',
+            infografia: "Joseph cierra esta etapa con su promoción y con la meta de estudiar negocios internacionales. Que cada paso que dé de aquí en adelante lo acerque a lo que sueña.",
             info: 'Curso: 11 · Documento: 1010',
-            profession: 'Futuro'
+            profession: "Futuro profesional en negocios internacionales"
         },
         {
             name: 'María Camila López castiblanco',
             photo: 'fotos-grado-once/alumno11.jpg',
-            infografia: 'Alegre, carismática y con una personalidad que no pasa desapercibida, con gustos variados y siempre dispuesta a descubrir cosas nuevas, apoya incondicionalmente a sus amigos, valiente y fuerte ante cualquier desafío, respetuosa, solidaria y con una energía que hace especial cada momento.',
+            infografia: "María Camila tiene una personalidad que no pasa desapercibida. Alegre y carismática, siempre está dispuesta a descubrir cosas nuevas y apoya a sus amigos sin condiciones. Es valiente ante cualquier desafío, respetuosa y solidaria, y su energía hace especial cada momento.",
             info: 'Curso: 11 · Documento: 1011',
             profession: 'Futura'
         },
         {
             name: 'Laura carolina lozada Martínez',
             photo: 'fotos-grado-once/alumno12.jpg',
-            infografia: 'Carismática, responsable, amable y solidaria, con una personalidad alegre y un gran corazón, buena amiga y compañera, llena de sueños infinitos y nuevas experiencias por vivir, dejando su huella en cada paso que da.',
+            infografia: "Laura Carolina es carismática, responsable y solidaria, con una alegría que se contagia y un corazón enorme. Es una buena amiga y compañera, llena de sueños y de ganas de vivir nuevas experiencias, y deja su huella en cada paso que da.",
             info: 'Curso: 11 · Documento: 1012',
             profession: 'Futura'
         },
         {
             name: 'Julián David Mateus Amaya',
             photo: 'fotos-grado-once/alumno13.jpg',
-            infografia: 'Gran estilo y personalidad, siempre destacando por su forma de ser y su buena energía, gran amigo, alegre y con un ambiente que contagia a quienes lo rodean, fuerte y valiente ante los retos, con grandes metas y la determinación para hacerlas realidad.',
+            infografia: "Julián tiene un estilo y una personalidad que siempre lo hacen destacar. Su buena energía contagia a quienes lo rodean, y es un gran amigo, alegre y valiente ante los retos. Tiene grandes metas y la determinación para hacerlas realidad.",
             info: 'Curso: 11 · Documento: 1013',
             profession: 'Futuro'
         },
         {
             name: 'John David Monroy tique',
             photo: 'fotos-grado-once/alumno14.jpg',
-            infografia: 'Corazón amable, extrovertido, muy alegre e inteligente, quiere mucho a sus amigos, siempre da lo mejor de sí, positivo y divertido, fan de Milo J, con muchas metas por alcanzar.',
+            infografia: "john, tienes el corazón más puro que conozco y eres la persona más inteligente, sabía que el día que decidí pedirte que hiciéramos el proyecto de grado en equipo iba a conocer ese niño que se esfuerza por que las cosas no solo salgan perfectas sino bonitas y eso se notó siempre en tus bailes y en tu ser.",
             info: 'Curso: 11 · Documento: 1014',
             profession: 'Futuro médico veterinario zootecnista'
         },
         {
             name: 'Diego Ortega feria ',
             photo: 'fotos-grado-once/alumno15.jpg',
-            infografia: 'Extrovertido, alegre y espontáneo, divertido y carismático, siempre tiene una ocurrencia para hacer reír, le encanta compartir con sus amigos y convertir cualquier momento en una anécdota, viviendo cada experiencia al máximo.',
+            infografia: "Diego es extrovertido, alegre y espontáneo, y siempre tiene una ocurrencia para hacernos reír. Le encanta compartir con sus amigos y convertir cualquier momento en una anécdota, porque vive cada experiencia al máximo.",
             info: 'Curso: 11 · Documento: 1015',
             profession: 'Futuro'
         },
         {
             name: 'Vivian Johana quintero caceres',
             photo: 'fotos-grado-once/alumno16.jpg',
-            infografia: 'Infografía',
+            infografia: "Vivian se despide del colegio con un sueño claro: ser tripulante de cabina. Que este nuevo comienzo le traiga muchas alegrías y la lleve tan lejos como quiera volar.",
             info: 'Curso: 11 · Documento: 1016',
-            profession: 'Futura ingeniera de sistemas'
+            profession: "Futura tripulante de cabina"
         },
         {
             name: 'María José salas Ruiz ',
             photo: 'fotos-grado-once/alumno17.jpg',
-            infografia: 'Gran amiga, carismática, responsable y deportista, con muchos sueños por cumplir, siempre comprometida con lo que se propone y con un gran corazón para sus amistades, disfrutando cada etapa mientras trabaja por aquello que desea.',
+            infografia: "María José es una gran amiga: carismática, responsable y deportista, con un corazón enorme para sus amistades. Tiene muchos sueños por cumplir y se compromete con todo lo que se propone, disfrutando cada etapa mientras trabaja por lo que desea.",
             info: 'Curso: 11 · Documento: 1017',
             profession: 'Futura repostera'
         },
         {
             name: 'Laura Alejandra Suárez giraldo ',
             photo: 'fotos-grado-once/alumno18.jpg',
-            infografia: 'Gran compañía, alegre, extrovertida y apasionada, le encanta compartir y salir con sus amigos, decidida y soñadora, siempre lucha por aquello que se propone y está construyendo el camino hacia sus sueños.',
+            infografia: "Laura, conocí a la persona más enérgica y chistosa con esas ocurrencias de un momento para otro no fui la mejor persona y pido perdón pero mas que nada agradezco la oportunidad de haber conocido una niña tan increíble.",
             info: 'Curso: 11 · Documento: 1018',
             profession: 'Futura negociadora internacional'
         },
         {
             name: 'Matías tiempo Ávila ',
             photo: 'fotos-grado-once/alumno19.jpg',
-            infografia: 'Infografía',
+            infografia: "Matías cierra esta etapa con su promoción y con todo un futuro por delante. Que todo lo vivido en el colegio lo acompañe en el camino que ahora empieza.",
             info: 'Curso: 11 · Documento: 1019',
-            profession: 'Futuro ingeniero de sistemas'
+            profession: ""
         },
         {
             name: 'Kim mai lee Vanegas Rivas',
             photo: 'fotos-grado-once/alumno20.jpg',
-            infografia: 'Súper extrovertida, deportista, carismática y alegre, siempre dispuesta a compartir momentos divertidos, con un gran corazón y mucha sensibilidad, le gusta ayudar a quienes la rodean y está lista para cumplir cada una de sus metas.',
+            infografia: "Kim es súper extrovertida, deportista y alegre, y siempre está lista para compartir un buen momento. Detrás de esa energía hay un gran corazón y mucha sensibilidad: le gusta ayudar a quienes la rodean y está lista para cumplir cada una de sus metas.",
             info: 'Curso: 11 · Documento: 1020',
             profession: 'Futura gastrónoma'
         },
         {
             name: 'Daysi Vanesa Vega gallo ',
             photo: 'fotos-grado-once/alumno21.jpg',
-            infografia: 'Personalidad alegre, extrovertida y risueña, muy habladora, estudiosa e inteligente, con un corazón noble y siempre dispuesta a ayudar, amistosa, dedicada y llena de ilusiones que espera convertir en grandes logros.',
+            infografia: "Daysi es alegre, risueña y muy habladora, y además estudiosa e inteligente. Tiene un corazón noble y siempre está dispuesta a ayudar; es amistosa, dedicada y está llena de ilusiones que va a convertir en grandes logros.",
             info: 'Curso: 11 · Documento: 1021',
             profession: 'Futura'
         },
         {
             name: 'Duvan Velázquez ',
             photo: 'fotos-grado-once/alumno22.jpg',
-            infografia: 'Callado, introvertido y alegre, de pocas palabras pero con un gran sentido del humor, amable, tranquilo y comprensivo, disfruta compartir con las personas que quiere, buen amigo y con muchas aspiraciones que poco a poco hará realidad.',
+            infografia: "Duvan es de pocas palabras, pero tiene un gran sentido del humor. Tranquilo, amable y comprensivo, disfruta compartir con las personas que quiere y es un buen amigo. Tiene muchas aspiraciones, y poco a poco las va a hacer realidad.",
             info: 'Curso: 11 · Documento: 1022',
-            profession: 'Futura ingeniera de sistemas'
+            profession: ""
         },
         {
             name: 'Samuel Mateo Yate Escobar',
             photo: 'fotos-grado-once/IMG-20260724-WA0139 - Copia.jpg',
-            infografia: 'Gran amigo, comprensivo, le gusta compartir con sus amigos, extrovertido, fanático de la F1, futuro emprendedor',
+            infografia: "les agradezco eternamente a mis compañeros por todos este tiempo y les pido perdón a cada uno porque se que cometí errores les deseo el mejor futuro y las mejores oportunidades a cada uno, los quiero a todos",
             info: 'Curso: 11 · CD: 1023',
             profession: 'Futuro ingeniero de sistemas'
         }
@@ -912,6 +905,23 @@ document.addEventListener('DOMContentLoaded', function () {
         if (e.key === 'ArrowRight') carruselActivo.show(carruselActivo.current + 1);
     });
 
+    // Bolitas al estilo de Instagram: solo se ven 5 alrededor de la ficha actual. Las de los extremos se achican
+    // cuando hay más fichas a ese lado, y las demás se esconden. La fila se va corriendo a medida que avanzas.
+    const PUNTOS_VISIBLES = 5;
+    function acomodarPuntos(dots, current) {
+        const total = dots.length;
+        const inicio = Math.max(0, Math.min(current - Math.floor(PUNTOS_VISIBLES / 2), total - PUNTOS_VISIBLES));
+        const fin = inicio + PUNTOS_VISIBLES - 1;
+        dots.forEach((dot, i) => {
+            const fuera = total > PUNTOS_VISIBLES && (i < inicio || i > fin);
+            const borde = total > PUNTOS_VISIBLES && ((i === inicio && inicio > 0) || (i === fin && fin < total - 1));
+            dot.classList.toggle('active', i === current);
+            dot.classList.toggle('punto-oculto', fuera);
+            dot.classList.toggle('punto-chico', borde && i !== current);
+            dot.tabIndex = fuera ? -1 : 0;
+        });
+    }
+
     function iniciarCarrusel(prefijo, items, renderCard) {
         const container = document.getElementById(`${prefijo}-card`);
         const prevBtn = document.getElementById(`${prefijo}-prev`);
@@ -937,6 +947,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 dot.addEventListener('click', () => carrusel.show(i));
                 dotsContainer.appendChild(dot);
             });
+            acomodarPuntos([...dotsContainer.children], carrusel.current);
         };
 
         prevBtn.addEventListener('click', () => carrusel.show(carrusel.current - 1));
@@ -987,8 +998,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const show = (index) => {
             current = (index + items.length) % items.length;
             items.forEach((item, itemIndex) => item.classList.toggle('active', itemIndex === current));
-            dots.forEach((dot, dotIndex) => dot.classList.toggle('active', dotIndex === current));
+            acomodarPuntos(dots, current);
         };
+        acomodarPuntos(dots, current);
 
         prevBtn.addEventListener('click', () => show(current - 1));
         nextBtn.addEventListener('click', () => show(current + 1));
