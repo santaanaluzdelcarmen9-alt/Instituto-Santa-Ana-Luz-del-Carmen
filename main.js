@@ -672,14 +672,14 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'Ashley nicolle Choles soto ',
             photo: 'fotos-grado-once/alumno5.jpg',
-            infografia: 'Infografía',
+            infografia: "Ashley cierra esta etapa con su promoción y con un sueño claro: ser ingeniera de sistemas. Que el camino que empieza le traiga todo lo que se merece.",
             info: 'Curso: 11 · Documento: 1005',
             profession: 'Futura ingeniera de sistemas'
         },
         {
             name: 'Laura Sofía Cupasachoa cabezas ',
             photo: 'fotos-grado-once/alumno6.jpg',
-            infografia: 'Infografía',
+            infografia: "Laura Sofía termina el colegio con la mirada puesta en ser ingeniera de sistemas. Que este nuevo camino le traiga muchos logros y que nunca deje de soñar en grande.",
             info: 'Curso: 11 · Documento: 1006',
             profession: 'Futura ingeniera de sistemas'
         },
@@ -707,7 +707,7 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'Joseph Starly Gómez castellanos ',
             photo: 'fotos-grado-once/alumno10.jpg',
-            infografia: 'Infografía',
+            infografia: "Joseph cierra esta etapa con su promoción y con todo un futuro por delante. Que cada paso que dé de aquí en adelante lo acerque a lo que sueña.",
             info: 'Curso: 11 · Documento: 1010',
             profession: 'Futuro'
         },
@@ -749,7 +749,7 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'Vivian Johana quintero caceres',
             photo: 'fotos-grado-once/alumno16.jpg',
-            infografia: 'Infografía',
+            infografia: "Vivian se despide del colegio con un sueño claro: ser ingeniera de sistemas. Que este nuevo comienzo le traiga muchas alegrías y la lleve tan lejos como quiera llegar.",
             info: 'Curso: 11 · Documento: 1016',
             profession: 'Futura ingeniera de sistemas'
         },
@@ -770,7 +770,7 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'Matías tiempo Ávila ',
             photo: 'fotos-grado-once/alumno19.jpg',
-            infografia: 'Infografía',
+            infografia: "Matías termina esta etapa con la meta de ser ingeniero de sistemas. Que todo lo vivido en el colegio lo acompañe en el camino que ahora empieza.",
             info: 'Curso: 11 · Documento: 1019',
             profession: 'Futuro ingeniero de sistemas'
         },
@@ -912,6 +912,23 @@ document.addEventListener('DOMContentLoaded', function () {
         if (e.key === 'ArrowRight') carruselActivo.show(carruselActivo.current + 1);
     });
 
+    // Bolitas al estilo de Instagram: solo se ven 5 alrededor de la ficha actual. Las de los extremos se achican
+    // cuando hay más fichas a ese lado, y las demás se esconden. La fila se va corriendo a medida que avanzas.
+    const PUNTOS_VISIBLES = 5;
+    function acomodarPuntos(dots, current) {
+        const total = dots.length;
+        const inicio = Math.max(0, Math.min(current - Math.floor(PUNTOS_VISIBLES / 2), total - PUNTOS_VISIBLES));
+        const fin = inicio + PUNTOS_VISIBLES - 1;
+        dots.forEach((dot, i) => {
+            const fuera = total > PUNTOS_VISIBLES && (i < inicio || i > fin);
+            const borde = total > PUNTOS_VISIBLES && ((i === inicio && inicio > 0) || (i === fin && fin < total - 1));
+            dot.classList.toggle('active', i === current);
+            dot.classList.toggle('punto-oculto', fuera);
+            dot.classList.toggle('punto-chico', borde && i !== current);
+            dot.tabIndex = fuera ? -1 : 0;
+        });
+    }
+
     function iniciarCarrusel(prefijo, items, renderCard) {
         const container = document.getElementById(`${prefijo}-card`);
         const prevBtn = document.getElementById(`${prefijo}-prev`);
@@ -937,6 +954,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 dot.addEventListener('click', () => carrusel.show(i));
                 dotsContainer.appendChild(dot);
             });
+            acomodarPuntos([...dotsContainer.children], carrusel.current);
         };
 
         prevBtn.addEventListener('click', () => carrusel.show(carrusel.current - 1));
@@ -987,8 +1005,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const show = (index) => {
             current = (index + items.length) % items.length;
             items.forEach((item, itemIndex) => item.classList.toggle('active', itemIndex === current));
-            dots.forEach((dot, dotIndex) => dot.classList.toggle('active', dotIndex === current));
+            acomodarPuntos(dots, current);
         };
+        acomodarPuntos(dots, current);
 
         prevBtn.addEventListener('click', () => show(current - 1));
         nextBtn.addEventListener('click', () => show(current + 1));
