@@ -658,7 +658,7 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'Mariana Castro blanco ',
             photo: 'fotos-grado-once/alumno4.jpg',
-            infografia: "Mariana es inteligente, estudiosa y responsable, y cuando baila se le nota la pasión. Realista y constante en todo lo que se propone, es una gran amiga y un apoyo para quienes la rodean. Tiene sueños enormes, y la alegría y la dedicación para alcanzar todo lo que se proponga.",
+            infografia: "Mariana, tu eres una de las niñas más inteligentes que conozco, perdoname por tratarte feo sin razon el proyecto de grado me dejo conocerte un poco mas pero me di cuenta de que eres muy buena persona y lo inteligente que eres se refleja siempre en ti",
             info: 'Curso: 11 · Documento: 1004',
             profession: ""
         },
@@ -700,7 +700,7 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'Joseph Starly Gómez castellanos ',
             photo: 'fotos-grado-once/alumno10.jpg',
-            infografia: "Joseph cierra esta etapa con su promoción y con la meta de estudiar negocios internacionales. Que cada paso que dé de aquí en adelante lo acerque a lo que sueña.",
+            infografia: "Joseph, se que eres muy inteligente y que tienes un corazon bueno nunca eh compartido contigo mucho tiempo pero si veo en ti mucha fuerza y se nota que tu corazon es bueno",
             info: 'Curso: 11 · Documento: 1010',
             profession: "Futuro profesional en negocios internacionales"
         },
@@ -721,7 +721,7 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'Julián David Mateus Amaya',
             photo: 'fotos-grado-once/alumno13.jpg',
-            infografia: "Julián tiene un estilo y una personalidad que siempre lo hacen destacar. Su buena energía contagia a quienes lo rodean, y es un gran amigo, alegre y valiente ante los retos. Tiene grandes metas y la determinación para hacerlas realidad.",
+            infografia: "Mateus, hace años nos volvimos amigos y todavía recuerdo cuando a veces íbamos a tu casa mi brother y con josé nos reíamos del abuelo que metia pegante, aunque pasaron cosas y la amistad no siguió más todavía les tengo cariño a los dos y me siento orgulloso de lo echado pa delante que es, por ahora son dulces pero estoy seguro de que el tiempo va a volver eso un imperio",
             info: 'Curso: 11 · Documento: 1013',
             profession: 'Futuro'
         },
@@ -742,7 +742,7 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'Vivian Johana quintero caceres',
             photo: 'fotos-grado-once/alumno16.jpg',
-            infografia: "Vivian se despide del colegio con un sueño claro: ser tripulante de cabina. Que este nuevo comienzo le traiga muchas alegrías y la lleve tan lejos como quiera volar.",
+            infografia: "vivían, en octavo nos conocimos y empezamos una amistad que al inicio fue rara pero con el tiempo nos agarramos ese cariño de hermanos y el apoyarnos con palabras de aliento, siempre pasara lo que pasara eso hizo que estas fuera una de las amistades más especiales que he tenido",
             info: 'Curso: 11 · Documento: 1016',
             profession: "Futura tripulante de cabina"
         },
@@ -770,7 +770,7 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             name: 'Kim mai lee Vanegas Rivas',
             photo: 'fotos-grado-once/alumno20.jpg',
-            infografia: "Kim es súper extrovertida, deportista y alegre, y siempre está lista para compartir un buen momento. Detrás de esa energía hay un gran corazón y mucha sensibilidad: le gusta ayudar a quienes la rodean y está lista para cumplir cada una de sus metas.",
+            infografia: "kim, mi mejor amiga la arquera estrella perdón por pegarte por todo, me encanta que nos entendamos tanto y desde que voy a verte jugar me la paso mas metido viendo partidos de millonarios para aprender más y si es increíble verte jugar mi brothercita",
             info: 'Curso: 11 · Documento: 1020',
             profession: 'Futura gastrónoma'
         },
