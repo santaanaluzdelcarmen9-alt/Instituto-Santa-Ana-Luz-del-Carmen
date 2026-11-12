@@ -594,7 +594,7 @@ main {
 }
 
 .card {
-    background: white;
+    background: rgb(254, 253, 253);
     padding: clamp(20px, 3vw, 32px);
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
