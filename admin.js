@@ -1,7 +1,6 @@
 let content = null;
 let cloudinary = {};
 const $ = (selector) => document.querySelector(selector);
-const camposLegales = ['nit', 'telefono', 'direccion', 'ciudad', 'correo', 'actualizado'];
 
 function escapeHtml(value) {
     return String(value).replace(/[&<>"']/g, (character) => ({
@@ -25,10 +24,34 @@ function showLogin(texto = '') {
 }
 
 // ==========================
-// LISTAS EDITABLES (avisos, instalaciones, galería, noticias, docentes, Grado Once)
+// CAMPOS POR NOMBRE
 // ==========================
-// Cada lista dice qué campos tiene y en qué campo guarda su foto; el panel las pinta y las lee igual.
+// Cada campo del formulario se llama como el dato que guarda: name="lema.texto" es content.lema.texto,
+// y name="docentes.2.name" es el nombre del tercer docente. Así se leen y se guardan todos igual.
+function leerRuta(objeto, ruta) {
+    return ruta.split('.').reduce((actual, parte) => (actual == null ? undefined : actual[parte]), objeto);
+}
+
+function escribirRuta(objeto, ruta, valor) {
+    const partes = ruta.split('.');
+    const ultima = partes.pop();
+    const destino = partes.reduce((actual, parte) => {
+        if (actual[parte] == null || typeof actual[parte] !== 'object') actual[parte] = {};
+        return actual[parte];
+    }, objeto);
+    destino[ultima] = valor;
+}
+
+// ==========================
+// LISTAS EDITABLES
+// ==========================
+// Cada lista dice qué campos tiene y, si lleva foto, en qué campo la guarda.
 const listas = {
+    cifras: {
+        titulo: (i) => `Cifra ${i + 1}`,
+        campos: [['numero', 'Número', 'text', '25'], ['texto', 'Texto', 'text', 'Años de historia']],
+        nuevo: () => ({ numero: '', texto: '' })
+    },
     notices: {
         titulo: (i) => `Aviso ${i + 1}`,
         campos: [['title', 'Título'], ['text', 'Texto', 'textarea']],
@@ -39,48 +62,83 @@ const listas = {
         campos: [['nombre', 'Nombre'], ['descripcion', 'Descripción', 'textarea']],
         foto: 'foto',
         carpeta: 'instalaciones',
+        carpetaVieja: 'fotos-instalaciones',
         nuevo: () => ({ id: `instalacion-${Date.now()}`, nombre: '', descripcion: '', foto: '' })
     },
-    galeria: {
-        titulo: (i) => `Foto ${i + 1}`,
-        campos: [['descripcion', 'Descripción (opcional)']],
-        foto: 'url',
-        carpeta: 'galeria',
-        nuevo: () => ({ id: `foto-${Date.now()}`, descripcion: '', url: '' })
+    docentes: {
+        titulo: (i) => `Docente ${i + 1}`,
+        campos: [['order', 'Orden', 'number'], ['name', 'Nombre'], ['profession', 'Cargo o acompañamiento'], ['info', 'Asignatura'], ['infografia', 'Descripción', 'textarea']],
+        foto: 'photo',
+        carpeta: 'docentes',
+        carpetaVieja: 'fotos-docentes',
+        nuevo: () => ({ id: `docente-${Date.now()}`, order: content.docentes.length + 1, name: '', profession: '', info: '', infografia: '', photo: '' })
     },
     noticias: {
         titulo: (i) => `Noticia ${i + 1}`,
         campos: [['titulo', 'Título']],
         foto: 'url',
         carpeta: 'noticias',
+        carpetaVieja: 'fotos-noticias',
         nuevo: () => ({ id: `noticia-${Date.now()}`, titulo: '', url: '' })
     },
-    docentes: {
-        titulo: (i) => `Ficha ${i + 1}`,
-        campos: [['order', 'Orden', 'number'], ['name', 'Nombre'], ['profession', 'Cargo o acompañamiento'], ['info', 'Asignatura'], ['infografia', 'Descripción', 'textarea']],
+    galeria: {
+        titulo: (i) => `Foto ${i + 1}`,
+        campos: [['descripcion', 'Descripción (opcional)']],
+        foto: 'url',
+        carpeta: 'galeria',
+        carpetaVieja: 'fotos-galeria',
+        nuevo: () => ({ id: `foto-${Date.now()}`, descripcion: '', url: '' })
+    },
+    personal: {
+        titulo: (i) => `Persona ${i + 1}`,
+        campos: [['order', 'Orden', 'number'], ['name', 'Nombre completo'], ['cargo', 'Cargo'], ['descripcion', 'Descripción', 'textarea']],
         foto: 'photo',
-        carpeta: 'docentes',
-        nuevo: () => ({ id: `docente-${Date.now()}`, order: content.docentes.length + 1, name: '', profession: '', info: '', infografia: '', photo: '' })
+        carpeta: 'personal',
+        carpetaVieja: 'imagenes-sitio/personal',
+        nuevo: () => ({ id: `persona-${Date.now()}`, order: content.personal.length + 1, name: '', cargo: '', descripcion: '', photo: '' })
+    },
+    infoColegio: {
+        titulo: (i) => `Tarjeta ${i + 1}`,
+        campos: [['icono', 'Ícono', 'select', iconosInfo], ['titulo', 'Título'], ['texto', 'Texto', 'textarea']],
+        nuevo: () => ({ id: `info-${Date.now()}`, icono: 'bi-info-circle', titulo: '', texto: '' })
     }
 };
 // Grado Once no está aquí a propósito: solo se cambia en el código (main.js).
 
-// misma regla que la página pública (fotoUrl en firebase-init.js) para mostrar la vista previa
-const carpetasViejas = { instalaciones: 'fotos-instalaciones', galeria: 'fotos-galeria', noticias: 'fotos-noticias', docentes: 'fotos-docentes' };
-
-function campoHtml(lista, index, [campo, etiqueta, tipo], valor) {
-    const name = `${lista}.${index}.${campo}`;
+function campoHtml(name, [, etiqueta, tipo, extra], valor) {
     const texto = escapeHtml(valor ?? '');
     if (tipo === 'textarea') {
         return `<label class="wide">${etiqueta}<textarea name="${name}" rows="3">${texto}</textarea></label>`;
     }
-    return `<label>${etiqueta}<input name="${name}" type="${tipo || 'text'}" value="${texto}"></label>`;
+    if (tipo === 'select') {
+        const opciones = Object.entries(extra).map(([clave, nombre]) =>
+            `<option value="${clave}"${clave === valor ? ' selected' : ''}>${escapeHtml(nombre)}</option>`).join('');
+        return `<label>${etiqueta}<select name="${name}">${opciones}</select></label>`;
+    }
+    const ejemplo = extra ? ` placeholder="${escapeHtml(extra)}"` : '';
+    return `<label>${etiqueta}<input name="${name}" type="${tipo || 'text'}" value="${texto}"${ejemplo}></label>`;
+}
+
+// vista previa + botón para subir + campo oculto con la dirección de la foto
+function fotoHtml(name, valor, carpetaVieja, atributos) {
+    const foto = fotoUrl(valor, carpetaVieja);
+    return `
+        <div class="foto-campo">
+            ${foto ? `<img class="foto-preview" src="${escapeHtml(foto)}" alt="">` : '<div class="foto-preview foto-vacia">Sin foto</div>'}
+            <label class="file-picker">
+                <input type="file" accept="image/*,.heic" ${atributos}>
+                <span class="file-button">${foto ? 'Cambiar foto' : 'Subir foto'}</span>
+            </label>
+            ${foto ? `<button type="button" class="danger" data-quitar-foto="${name}">Quitar foto</button>` : ''}
+            <input type="hidden" name="${name}" value="${escapeHtml(valor || '')}">
+        </div>`;
 }
 
 function renderLista(lista) {
     const config = listas[lista];
     const items = content[lista];
     const contenedor = document.querySelector(`[data-lista="${lista}"]`);
+    if (!contenedor) return;
 
     if (!items.length) {
         contenedor.innerHTML = '<p class="hint">Todavía no hay elementos.</p>';
@@ -88,83 +146,69 @@ function renderLista(lista) {
     }
 
     contenedor.innerHTML = items.map((item, index) => {
-        const foto = config.foto ? fotoUrl(item[config.foto], carpetasViejas[lista]) : '';
-        const bloqueFoto = config.foto ? `
-            <div class="foto-campo">
-                ${foto ? `<img class="foto-preview" src="${escapeHtml(foto)}" alt="">` : '<div class="foto-preview foto-vacia">Sin foto</div>'}
-                <label class="file-picker">
-                    <input type="file" accept="image/*,.heic" data-subir="${lista}" data-index="${index}">
-                    <span class="file-button">${foto ? 'Cambiar foto' : 'Subir foto'}</span>
-                </label>
-                <input type="hidden" name="${lista}.${index}.${config.foto}" value="${escapeHtml(item[config.foto] || '')}">
-            </div>` : '';
-
+        const bloqueFoto = config.foto
+            ? fotoHtml(`${lista}.${index}.${config.foto}`, item[config.foto], config.carpetaVieja, `data-subir="${lista}" data-index="${index}"`)
+            : '';
         return `<div class="item" data-index="${index}">
             <h3>${config.titulo(index)}</h3>
             ${bloqueFoto}
-            <div class="form-grid">${config.campos.map((campo) => campoHtml(lista, index, campo, item[campo[0]])).join('')}</div>
+            <div class="form-grid">${config.campos.map((campo) => campoHtml(`${lista}.${index}.${campo[0]}`, campo, item[campo[0]])).join('')}</div>
             <button type="button" class="remove" data-quitar="${lista}" data-index="${index}">Eliminar</button>
         </div>`;
     }).join('');
 }
 
+// fotos sueltas (escudo y portada)
+function renderFotosSueltas() {
+    document.querySelectorAll('[data-foto]').forEach((caja) => {
+        const ruta = caja.dataset.foto;
+        caja.innerHTML = `<p class="foto-etiqueta">${escapeHtml(caja.dataset.etiqueta || 'Foto')}</p>`
+            + fotoHtml(ruta, leerRuta(content, ruta), 'imagenes-sitio', `data-subir-campo="${ruta}" data-carpeta="${caja.dataset.carpeta || 'sitio'}"`);
+    });
+}
+
+// llena todos los campos sueltos (los que no están dentro de una lista) con lo guardado
 function render() {
-    const sections = content.sections || {};
-    const inicio = sections.inicio || {};
-    const legal = content.legal || {};
-
-    $('[name="institution.name"]').value = content.institution.name || '';
-    $('[name="institution.badge"]').value = content.institution.badge || '';
-    $('[name="institution.description"]').value = content.institution.description || '';
-    $('[name="section.inicio.mission"]').value = inicio.mission || '';
-    $('[name="section.inicio.vision"]').value = inicio.vision || '';
-    $('[name="section.inicio.values"]').value = inicio.values || '';
-    $('[name="section.inicio.manual"]').value = inicio.manual || '';
-    $('[name="section.Actividades"]').value = sections.Actividades || '';
-    $('[name="section.academico"]').value = sections.academico || '';
-    $('[name="section.contacto"]').value = sections.contacto || '';
-    camposLegales.forEach((campo) => { $(`[name="legal.${campo}"]`).value = legal[campo] || ''; });
-
+    document.querySelectorAll('#content-form [name]').forEach((campo) => {
+        if (campo.closest('[data-lista], [data-foto]')) return;
+        campo.value = leerRuta(content, campo.name) ?? '';
+    });
+    renderFotosSueltas();
     Object.keys(listas).forEach(renderLista);
 }
 
-// pasa lo escrito en el formulario a `content` (se llama antes de agregar, quitar o subir, para no perder lo escrito)
+// pasa lo escrito en el formulario a `content` (antes de agregar, quitar o subir, para no perder lo escrito)
 function collect() {
-    const sections = content.sections || {};
-    const inicio = sections.inicio || {};
-
-    content.institution.name = $('[name="institution.name"]').value;
-    content.institution.badge = $('[name="institution.badge"]').value;
-    content.institution.description = $('[name="institution.description"]').value;
-    inicio.mission = $('[name="section.inicio.mission"]').value;
-    inicio.vision = $('[name="section.inicio.vision"]').value;
-    inicio.values = $('[name="section.inicio.values"]').value;
-    inicio.manual = $('[name="section.inicio.manual"]').value;
-    sections.inicio = inicio;
-    sections.Actividades = $('[name="section.Actividades"]').value;
-    sections.academico = $('[name="section.academico"]').value;
-    sections.contacto = $('[name="section.contacto"]').value;
-    content.sections = sections;
-
-    content.legal = {};
-    camposLegales.forEach((campo) => { content.legal[campo] = $(`[name="legal.${campo}"]`).value.trim(); });
-
-    Object.entries(listas).forEach(([lista, config]) => {
-        content[lista].forEach((item, index) => {
-            const campos = config.foto ? [...config.campos, [config.foto]] : config.campos;
-            campos.forEach(([campo, , tipo]) => {
-                const input = document.querySelector(`[name="${lista}.${index}.${campo}"]`);
-                if (!input) return;
-                item[campo] = tipo === 'number' ? (Number(input.value) || index + 1) : input.value;
-            });
-        });
+    document.querySelectorAll('#content-form [name]').forEach((campo) => {
+        let valor = campo.value;
+        if (campo.type === 'number') {
+            const index = Number(campo.name.split('.')[1]);
+            valor = Number(valor) || index + 1;
+        } else if (campo.type !== 'hidden') {
+            valor = valor.trim();
+        }
+        escribirRuta(content, campo.name, valor);
     });
 }
 
 function normalizar(datos) {
     const lista = (valor) => (Array.isArray(valor) ? valor : []);
-    const resultado = { ...datos, institution: datos.institution || {}, sections: datos.sections || {}, legal: datos.legal || {} };
-    Object.keys(listas).forEach((nombre) => { resultado[nombre] = lista(datos[nombre]); });
+    const objeto = (valor) => (valor && typeof valor === 'object' && !Array.isArray(valor) ? valor : {});
+    const resultado = {
+        ...datos,
+        institution: objeto(datos.institution),
+        sections: objeto(datos.sections),
+        lema: objeto(datos.lema),
+        contacto: objeto(datos.contacto),
+        redes: objeto(datos.redes),
+        legal: objeto(datos.legal)
+    };
+    resultado.sections.inicio = objeto(resultado.sections.inicio);
+    Object.keys(listas).forEach((nombre) => {
+        // las listas que nunca se han guardado empiezan con su plantilla, para que se vea qué llenar
+        resultado[nombre] = Array.isArray(datos[nombre]) ? datos[nombre] : JSON.parse(JSON.stringify(plantillas[nombre] || []));
+    });
+    resultado.notices = lista(resultado.notices);
     return resultado;
 }
 
@@ -212,7 +256,7 @@ $('#cloudinary-form').addEventListener('submit', async (event) => {
 // sube una imagen a Cloudinary y devuelve una dirección que la entrega optimizada (y convierte HEIC a JPG/WebP)
 async function subirFoto(archivo, carpeta) {
     if (!cloudinary.cloudName || !cloudinary.preset) {
-        throw new Error('Primero llena y guarda la "Configuración de fotos (Cloudinary)".');
+        throw new Error('Primero llena y guarda la "Configuración de fotos (Cloudinary)", al final del panel.');
     }
     const form = new FormData();
     form.append('file', archivo);
@@ -228,27 +272,28 @@ async function subirFoto(archivo, carpeta) {
 }
 
 document.addEventListener('change', async (event) => {
-    const unaFoto = event.target.dataset.subir;
-    const varias = event.target.dataset.subirVarias;
-    const lista = unaFoto || varias;
+    const { subir: lista, subirVarias: varias, subirCampo: campoSuelto } = event.target.dataset;
     const archivos = [...(event.target.files || [])];
-    if (!lista || !archivos.length) return;
+    if (!(lista || varias || campoSuelto) || !archivos.length) return;
 
     collect();
-    const config = listas[lista];
     $('#save-message').textContent = `Subiendo ${archivos.length === 1 ? 'la foto' : `${archivos.length} fotos`}...`;
 
     try {
-        for (const archivo of archivos) {
-            const url = await subirFoto(archivo, config.carpeta);
-            if (unaFoto) {
-                content[lista][Number(event.target.dataset.index)][config.foto] = url;
-            } else {
-                content[lista].push({ ...config.nuevo(), [config.foto]: url });
+        if (campoSuelto) {
+            escribirRuta(content, campoSuelto, await subirFoto(archivos[0], event.target.dataset.carpeta || 'sitio'));
+            renderFotosSueltas();
+        } else {
+            const nombre = lista || varias;
+            const config = listas[nombre];
+            for (const archivo of archivos) {
+                const url = await subirFoto(archivo, config.carpeta);
+                if (lista) content[nombre][Number(event.target.dataset.index)][config.foto] = url;
+                else content[nombre].push({ ...config.nuevo(), [config.foto]: url });
             }
+            renderLista(nombre);
         }
         hayCambios = true;
-        renderLista(lista);
         $('#save-message').textContent = 'Foto lista. Pulsa "Guardar cambios" para publicarla.';
     } catch (error) {
         console.error('Error al subir la foto:', error);
@@ -258,18 +303,23 @@ document.addEventListener('change', async (event) => {
 });
 
 // ==========================
-// AGREGAR Y QUITAR ELEMENTOS DE LAS LISTAS
+// AGREGAR Y QUITAR ELEMENTOS Y FOTOS
 // ==========================
 document.addEventListener('click', (event) => {
-    const agregar = event.target.dataset.agregar;
-    const quitar = event.target.dataset.quitar;
-    if (!agregar && !quitar) return;
+    const { agregar, quitar, quitarFoto } = event.target.dataset;
+    if (!agregar && !quitar && !quitarFoto) return;
 
     collect();
-    if (agregar) content[agregar].push(listas[agregar].nuevo());
-    if (quitar) content[quitar].splice(Number(event.target.dataset.index), 1);
+    if (quitarFoto) {
+        escribirRuta(content, quitarFoto, '');
+        renderFotosSueltas();
+        Object.keys(listas).forEach(renderLista);
+    } else {
+        if (agregar) content[agregar].push(listas[agregar].nuevo());
+        if (quitar) content[quitar].splice(Number(event.target.dataset.index), 1);
+        renderLista(agregar || quitar);
+    }
     hayCambios = true;
-    renderLista(agregar || quitar);
 });
 
 // ==========================
@@ -281,6 +331,7 @@ $('#content-form').addEventListener('submit', async (event) => {
     event.preventDefault();
     collect();
     content.docentes.sort((a, b) => a.order - b.order);
+    content.personal.sort((a, b) => a.order - b.order);
     $('#save-message').textContent = 'Guardando...';
 
     try {

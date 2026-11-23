@@ -6,7 +6,7 @@ Sitio institucional del Instituto Santa Ana Luz del Carmen, hecho con HTML, CSS 
 
 - Página pública con las secciones Inicio, Actividades, Académico, Instalaciones, Docentes, Noticias, Galería, Contacto y Grado Once.
 - Páginas legales: Política de tratamiento de datos personales (Ley 1581 de 2012), Términos y condiciones y Aviso de imágenes y servicios externos.
-- Panel de directivas (`admin.html`) donde se editan textos, datos legales, avisos, instalaciones, galería, noticias, docentes, profesores, directivas y cuentas. **Grado Once no está en el panel:** solo se cambia en `main.js` (lista `gradoOnceStudents`) y sus fotos van en `fotos-grado-once/`.
+- Panel de directivas (`admin.html`) donde se edita **toda la información de la página**, en el mismo orden que el menú: identidad (nombre y escudo), inicio (portada, cifras, misión, visión, valores, manual y lema), avisos, actividades, académico, instalaciones, docentes, noticias, galería, información (equipo y tarjetas "Sobre el colegio"), pie de página (contacto, horario y redes) y datos legales. Al final están los accesos: directivas, profesores, cuentas y Cloudinary. **Grado Once no está en el panel:** solo se cambia en `main.js` (lista `gradoOnceStudents`) y sus fotos van en `fotos-grado-once/`.
 - Fotos subidas desde el panel a **Cloudinary** (se convierten y optimizan solas; también acepta fotos HEIC de iPhone).
 - Lo que se guarda en el panel se ve en la página de inmediato.
 
@@ -50,8 +50,8 @@ instituto-santa-ana-luz-del-carmen/
 
 | Quiero cambiar... | Dónde | ¿Hay que publicar? |
 | --- | --- | --- |
-| Textos, avisos, fotos, docentes, instalaciones, galería, noticias, datos legales, profesores o directivas | Panel: <https://santa-ana-web-e9f0f.web.app/admin.html> | **No.** Se ve al instante al pulsar *Guardar cambios*. |
-| Diseño, colores, secciones nuevas, textos legales, **Grado Once** | El código (este proyecto) | **Sí**, con `npm run deploy` (pasos abajo). |
+| Cualquier texto o foto de la página: nombre, escudo, portada, cifras, lema, avisos, fichas, galería, noticias, equipo, contacto, redes, datos legales, profesores o directivas | Panel: <https://santa-ana-web-e9f0f.web.app/admin.html> | **No.** Se ve al instante al pulsar *Guardar cambios*. |
+| Diseño, colores, secciones nuevas, el texto de las páginas legales, **Grado Once** | El código (este proyecto) | **Sí**, con `npm run deploy` (pasos abajo). |
 
 ## Cambiar el código paso a paso
 
