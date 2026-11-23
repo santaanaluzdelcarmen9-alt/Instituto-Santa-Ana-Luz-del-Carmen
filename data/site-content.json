@@ -1,111 +1,253 @@
 {
-  "institution": {
-    "name": "Instituto Santa Ana Luz del Carmen",
-    "badge": "Educación integral",
-    "description": "..."
-  },
-  "notices": [
+  "cifras": [
     {
-      "title": "Semana Cultural",
-      "text": "..."
+      "numero": "58",
+      "texto": "Años de historia"
     },
     {
-      "title": "Inscripciones",
-      "text": "..."
+      "numero": "[00]",
+      "texto": "Estudiantes"
     },
     {
-      "title": "Próximo Evento",
-      "text": "..."
+      "numero": "18",
+      "texto": "Docentes"
+    },
+    {
+      "texto": "Promociones",
+      "numero": "[00]"
     }
   ],
+  "contacto": {
+    "correo": "",
+    "frase": "",
+    "horario": ""
+  },
   "docentes": [
     {
-      "id": "docente-1788047501409",
       "order": 1,
-      "name": "Anita ",
       "photo": "",
+      "id": "docente-1788047501409",
       "infografia": "...",
+      "name": "Anita",
       "info": "Asignatura: Ética y Emprendimiento",
-      "profession": "coordinadora"
+      "profession": ""
     },
     {
-      "id": "docente-1",
-      "order": 2,
-      "name": "Sebastián",
-      "photo": "",
-      "infografia": "...",
       "info": "Asignatura: Biología",
-      "profession": "Acompañamiento y formación integral"
+      "name": "Sebastián",
+      "profession": "Acompañamiento y formación integral",
+      "photo": "",
+      "id": "docente-1",
+      "infografia": "...",
+      "order": 2
     },
     {
-      "id": "docente-2",
-      "order": 3,
       "name": "Dagoberto",
-      "photo": "",
-      "infografia": "...",
       "info": "Asignatura: Matemáticas",
-      "profession": "Enseñanza aplicada y apoyo académico"
+      "profession": "Enseñanza aplicada y apoyo académico",
+      "infografia": "...",
+      "photo": "",
+      "id": "docente-2",
+      "order": 3
     },
     {
       "id": "docente-1788454163806",
       "order": 4,
-      "name": "",
-      "photo": "",
+      "profession": "",
       "infografia": "...",
+      "photo": "",
       "info": "",
-      "profession": ""
+      "name": ""
     },
     {
-      "id": "docente-1788454164294",
+      "profession": "",
       "order": 5,
-      "name": "",
-      "photo": "",
+      "id": "docente-1788454164294",
       "infografia": "...",
       "info": "",
-      "profession": ""
+      "name": "",
+      "photo": ""
+    },
+    {
+      "infografia": "",
+      "profession": "",
+      "info": "",
+      "name": "santiago",
+      "photo": "",
+      "id": "docente-1791143566534",
+      "order": 6
+    }
+  ],
+  "galeria": [],
+  "infoColegio": [
+    {
+      "id": "info-1",
+      "titulo": "Nuestra historia",
+      "icono": "bi-hourglass-split",
+      "texto": "[Cuándo y cómo se fundó el colegio, y quién lo fundó.]"
+    },
+    {
+      "texto": "[Jornada (mañana, tarde, única) y horario de entrada y salida.]",
+      "icono": "bi-clock",
+      "id": "info-2",
+      "titulo": "Jornada y horarios"
+    },
+    {
+      "titulo": "Niveles que ofrecemos",
+      "texto": "[Por ejemplo: preescolar, básica primaria, básica secundaria y media.]",
+      "icono": "bi-mortarboard",
+      "id": "info-3"
+    },
+    {
+      "icono": "bi-clipboard-check",
+      "texto": "[Pasos y documentos para matricular a un estudiante, y fechas de inscripción.]",
+      "titulo": "Admisiones",
+      "id": "info-4"
+    },
+    {
+      "titulo": "Uniformes",
+      "id": "info-5",
+      "texto": "[Cómo es el uniforme de diario y el de educación física, y dónde se consigue.]",
+      "icono": "bi-person-badge"
+    },
+    {
+      "id": "info-6",
+      "icono": "bi-award",
+      "texto": "[Premios, resultados en las pruebas Saber u otros logros del colegio.]",
+      "titulo": "Reconocimientos"
     }
   ],
   "instalaciones": [
     {
-      "id": "instalacion-1",
-      "nombre": "Biblioteca",
       "descripcion": "...",
-      "foto": ""
-    },
-    {
       "id": "instalacion-2",
-      "nombre": "Laboratorio de Ciencias",
-      "descripcion": "...",
-      "foto": ""
+      "foto": "",
+      "nombre": "Laboratorio de Ciencias"
     },
     {
-      "id": "instalacion-3",
-      "nombre": "Sala de Informática",
+      "foto": "",
       "descripcion": "...",
-      "foto": ""
+      "nombre": "Sala de Informática",
+      "id": "instalacion-3"
     },
     {
       "id": "instalacion-4",
-      "nombre": "Cancha Deportiva",
       "descripcion": "...",
+      "nombre": "Cancha Deportiva",
       "foto": ""
+    },
+    {
+      "nombre": "Biblioteca",
+      "foto": "",
+      "descripcion": "...",
+      "id": "instalacion-1790995881958"
     }
   ],
+  "institution": {
+    "portada": "",
+    "name": "Instituto Santa Ana Luz del Carmen",
+    "badge": "Educación integral",
+    "description": "Institución académica de aprendizaje",
+    "escudo": "",
+    "subtitle": "",
+    "shortName": ""
+  },
+  "legal": {
+    "ciudad": "",
+    "correo": "",
+    "direccion": "",
+    "nit": "",
+    "telefono": "",
+    "actualizado": ""
+  },
+  "lema": {
+    "autor": "",
+    "texto": "Hacia un camino en valores"
+  },
+  "notices": [
+    {
+      "title": "Semana Cultural",
+      "text": "13-19/Septiembre/2027"
+    },
+    {
+      "text": "01 de Diciembre \n8:30 AM-3:00 PM",
+      "title": "Inscripciones"
+    },
+    {
+      "title": "Próximo Evento",
+      "text": "25/11/2026"
+    }
+  ],
+  "noticias": [],
+  "personal": [
+    {
+      "cargo": "Rector(a)",
+      "name": "Jesús Alberto Moreno Burgos",
+      "photo": "",
+      "order": 1,
+      "id": "persona-1",
+      "descripcion": "[Una frase sobre su labor o su formación]"
+    },
+    {
+      "cargo": "Coordinador(a) académico",
+      "descripcion": "[Una frase sobre su labor o su formación]",
+      "order": 2,
+      "name": "Amparo Diaz",
+      "id": "persona-2",
+      "photo": ""
+    },
+    {
+      "cargo": "Coordinador(a) de convivencia",
+      "descripcion": "[Una frase sobre su labor o su formación]",
+      "name": "Ana Elvia Díaz",
+      "id": "persona-3",
+      "photo": "",
+      "order": 3
+    },
+    {
+      "order": 4,
+      "id": "persona-4",
+      "photo": "",
+      "name": "Laura",
+      "descripcion": "[Una frase sobre su labor o su formación]",
+      "cargo": "Orientador(a) escolar"
+    },
+    {
+      "cargo": "Secretaría académica",
+      "name": "Jasmín",
+      "descripcion": "[Una frase sobre su labor o su formación]",
+      "photo": "",
+      "order": 5,
+      "id": "persona-5"
+    },
+    {
+      "id": "persona-6",
+      "descripcion": "[Una frase sobre su labor o su formación]",
+      "cargo": "Tesorería",
+      "order": 6,
+      "photo": "",
+      "name": "Jasmín"
+    }
+  ],
+  "redes": {
+    "tiktok": "https://www.tiktok.com/@institutosantaana1",
+    "instagram": "https://www.instagram.com/isaldc26",
+    "whatsapp": "3229176935",
+    "youtube": "https://www.youtube.com/@isalc.santaana",
+    "facebook": "https://www.facebook.com/100057657721600"
+  },
   "sections": {
+    "Actividades": "...",
+    "conocenos": "...",
+    "contacto": "...",
+    "noticias": "...",
+    "instalaciones": "...",
+    "academico": "...",
     "inicio": {
       "mission": "...",
+      "manual": "...",
       "vision": "...",
-      "values": "...",
-      "manual": "..."
-    },
-    "conocenos": "...",
-    "academico": "...",
-    "instalaciones": "...",
-    "noticias": "...",
-    "contacto": "...",
-    "Actividades": "..."
-  },
-  "galeria": [],
-  "noticias": [],
-  "legal": {}
+      "values": "..."
+    }
+  }
 }

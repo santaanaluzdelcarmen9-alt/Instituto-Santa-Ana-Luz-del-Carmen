@@ -34,7 +34,7 @@ instituto-santa-ana-luz-del-carmen/
 ├── firebase.json           # Qué archivos publica Firebase Hosting
 ├── firestore.rules         # Permisos de la base de datos
 ├── .firebaserc             # Proyecto de Firebase (santa-ana-web-e9f0f)
-└── data/site-content.json  # Contenido inicial: se usa solo hasta el primer "Guardar cambios" del panel
+└── data/site-content.json  # Copia de respaldo del contenido (ver "Respaldo del contenido")
 ```
 
 ## Primera configuración (una sola vez)
@@ -45,6 +45,36 @@ instituto-santa-ana-luz-del-carmen/
 4. En **Configuración de fotos (Cloudinary)** escribe el *Cloud name* y el nombre del preset.
 5. Agrega en **Directivas** los correos de las demás directivas y en **Profesores** los de los profesores.
 6. Revisa el contenido, llena los **Datos legales del colegio** y pulsa **Guardar cambios**.
+
+## Entrega: cuentas y accesos
+
+Lo que necesita saber quien se queda a cargo de la página.
+
+| Qué | Dónde | Quién tiene acceso |
+| --- | --- | --- |
+| Página publicada | <https://santa-ana-web-e9f0f.web.app> | Pública |
+| Panel de directivas | <https://santa-ana-web-e9f0f.web.app/admin.html> | La cuenta principal del colegio y los correos de la lista **Directivas** del panel |
+| Firebase (proyecto `santa-ana-web-e9f0f`) | <https://console.firebase.google.com/project/santa-ana-web-e9f0f> | La cuenta principal del colegio (santaanaluzdelcarmen9@gmail.com) |
+| Código | <https://github.com/santaanaluzdelcarmen9-alt/Instituto-Santa-Ana-Luz-del-Carmen> | La cuenta de GitHub del colegio |
+| Fotos | <https://cloudinary.com> | La cuenta con la que se creó el Cloudinary del colegio |
+
+### Pasar la página a otras personas
+
+1. **Para editar el contenido** (lo más común): una directiva entra al panel y agrega el correo de Google de la persona en **Directivas**. No hace falta nada más.
+2. **Para administrar Firebase:** en la consola de Firebase → ⚙️ **Configuración del proyecto** → **Usuarios y permisos** → **Agregar miembro**, con el rol **Propietario**.
+3. **Para el código:** en GitHub → **Settings** → **Collaborators** → **Add people**.
+4. **Para las fotos:** en Cloudinary → **Settings** → **Users** → invitar a la persona.
+5. **Si cambia la cuenta principal del colegio:** el correo que siempre puede entrar al panel está escrito en `firestore.rules` (función `esDirectiva`). Cámbialo ahí y publica con `npm run deploy`. Antes, agrega el correo nuevo en **Directivas** para no quedar por fuera.
+
+### Buenas prácticas
+
+- Ten el panel abierto en **una sola pestaña**. Si lo dejaste abierto un rato, recárgalo (F5) antes de editar. Si dos personas cambian la misma parte al mismo tiempo, el panel no guarda y avisa, para que nadie borre el trabajo del otro.
+- Publica fotos y nombres de estudiantes solo con autorización escrita de sus padres o acudientes.
+- Los cambios de **contenido** se hacen en el panel; los de **diseño** y **Grado Once**, en el código (ver "Cambiar el código paso a paso").
+
+### Respaldo del contenido
+
+`data/site-content.json` es una copia del contenido que había en el panel el día de la entrega. Si algún día se borra el contenido de Firebase, la página y el panel usan esa copia: abre el panel, revisa que todo esté y pulsa **Guardar cambios** para volver a subirlo. Las listas de directivas, profesores y cuentas no van en la copia porque son datos privados.
 
 ## Qué se cambia dónde
 
