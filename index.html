@@ -97,21 +97,16 @@
 
         <!-- CIFRAS DEL COLEGIO. Solo se ven en Inicio. -->
         <!-- las cifras se cambian en el panel (Inicio → Cifras) -->
-        <section class="cifras solo-inicio" id="cifras" aria-label="El colegio en cifras">
-            <div class="cifra"><strong>[00]</strong><span>Años de historia</span></div>
-            <div class="cifra"><strong>[00]</strong><span>Estudiantes</span></div>
-            <div class="cifra"><strong>[00]</strong><span>Docentes</span></div>
-            <div class="cifra"><strong>[00]</strong><span>Promociones</span></div>
-        </section>
+        <section class="cifras solo-inicio vacio" id="cifras" aria-label="El colegio en cifras"></section>
 
         <div id="content-panel" class="content-panel"></div>
 
         <!-- LEMA DEL COLEGIO. Solo se ve en Inicio. -->
         <!-- el lema se cambia en el panel (Inicio → Lema). Si se deja vacío, no se muestra. -->
-        <section class="lema solo-inicio" id="lema">
+        <section class="lema solo-inicio vacio" id="lema">
             <blockquote>
-                <p id="lema-texto">[Lema del colegio]</p>
-                <cite id="lema-autor">[Autor o "Lema institucional"]</cite>
+                <p id="lema-texto"></p>
+                <cite id="lema-autor"></cite>
             </blockquote>
         </section>
     </main>
@@ -148,17 +143,12 @@
                     </span>
                 </div>
                 <!-- la frase y el contacto se cambian en el panel (Pie de página y contacto) -->
-                <p id="pie-frase">[Frase corta que describa al colegio, por ejemplo su enfoque o su historia.]</p>
+                <p id="pie-frase" hidden></p>
             </div>
 
             <div>
                 <h3>Contacto</h3>
-                <ul class="site-footer__lista" id="pie-contacto">
-                    <li><i class="bi bi-geo-alt-fill"></i> [Dirección del colegio], [Ciudad]</li>
-                    <li><i class="bi bi-telephone-fill"></i> [Teléfono del colegio]</li>
-                    <li><i class="bi bi-envelope-fill"></i> [correo@colegio.edu.co]</li>
-                    <li><i class="bi bi-clock-fill"></i> [Horario de atención, por ejemplo: lunes a viernes, 7:00 a. m. a 3:00 p. m.]</li>
-                </ul>
+                <ul class="site-footer__lista" id="pie-contacto"></ul>
             </div>
 
             <div>
@@ -172,15 +162,10 @@
                 </ul>
             </div>
 
-            <div id="pie-redes-bloque">
+            <div id="pie-redes-bloque" hidden>
                 <h3>Síguenos</h3>
                 <!-- solo se ven las redes que tengan enlace en el panel -->
-                <div class="site-footer__redes" id="pie-redes">
-                    <a href="#" aria-label="Facebook" target="_blank" rel="noopener"><i class="bi bi-facebook"></i></a>
-                    <a href="#" aria-label="Instagram" target="_blank" rel="noopener"><i class="bi bi-instagram"></i></a>
-                    <a href="#" aria-label="YouTube" target="_blank" rel="noopener"><i class="bi bi-youtube"></i></a>
-                    <a href="#" aria-label="WhatsApp" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i></a>
-                </div>
+                <div class="site-footer__redes" id="pie-redes"></div>
             </div>
         </div>
 
