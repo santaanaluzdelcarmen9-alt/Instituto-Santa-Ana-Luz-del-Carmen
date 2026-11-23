@@ -224,6 +224,8 @@ async function loadContent() {
     }
 
     content = normalizar(datos || {});
+    // copia de cómo estaba al abrir el panel: al guardar se compara con esto para subir solo lo que cambió
+    original = JSON.parse(JSON.stringify(content));
     render();
 }
 
@@ -325,20 +327,70 @@ document.addEventListener('click', (event) => {
 // ==========================
 // GUARDAR
 // ==========================
+// Si dos personas tienen el panel abierto a la vez, guardar todo de una vez borraría lo que guardó la otra.
+// Por eso solo se suben las partes que cambiaste, y si otra persona cambió esa misma parte mientras
+// tenías el panel abierto, no se guarda nada y se avisa (así nadie pierde su trabajo).
 let hayCambios = false;
+let original = null;
+
+const nombresPartes = {
+    institution: 'Identidad y portada', cifras: 'Cifras', sections: 'Textos de las secciones', lema: 'Lema',
+    notices: 'Avisos', instalaciones: 'Instalaciones', docentes: 'Docentes', noticias: 'Noticias', galeria: 'Galería',
+    personal: 'Nuestro equipo', infoColegio: 'Sobre el colegio', contacto: 'Contacto', redes: 'Redes sociales',
+    legal: 'Datos legales y dirección'
+};
+
+// compara sin importar el orden de las claves dentro de cada objeto
+function estable(valor) {
+    if (Array.isArray(valor)) return valor.map(estable);
+    if (valor && typeof valor === 'object') {
+        return Object.keys(valor).sort().reduce((salida, clave) => ({ ...salida, [clave]: estable(valor[clave]) }), {});
+    }
+    return valor ?? null;
+}
+const igual = (a, b) => JSON.stringify(estable(a)) === JSON.stringify(estable(b));
 
 $('#content-form').addEventListener('submit', async (event) => {
     event.preventDefault();
     collect();
     content.docentes.sort((a, b) => a.order - b.order);
     content.personal.sort((a, b) => a.order - b.order);
+
+    const cambiadas = Object.keys(content).filter((parte) => !igual(content[parte], original?.[parte]));
+    if (!cambiadas.length) {
+        $('#save-message').textContent = 'No hay cambios para guardar.';
+        return;
+    }
     $('#save-message').textContent = 'Guardando...';
 
     try {
-        await contenidoDoc.set(content);
+        const choques = await db.runTransaction(async (transaccion) => {
+            const snap = await transaccion.get(contenidoDoc);
+            if (!snap.exists) {
+                transaccion.set(contenidoDoc, content);
+                return [];
+            }
+            const enServidor = normalizar(snap.data());
+            const choques = cambiadas.filter((parte) =>
+                !igual(enServidor[parte], original[parte]) && !igual(enServidor[parte], content[parte]));
+            if (choques.length) return choques;
+
+            const cambios = {};
+            cambiadas.forEach((parte) => { cambios[parte] = content[parte]; });
+            transaccion.update(contenidoDoc, cambios);
+            return [];
+        });
+
+        if (choques.length) {
+            const partes = choques.map((parte) => nombresPartes[parte] || parte).join(', ');
+            $('#save-message').textContent = `No se guardó: mientras tenías el panel abierto, alguien más guardó cambios en ${partes}. `
+                + 'Copia lo que escribiste, recarga el panel (F5) y vuelve a hacer tu cambio.';
+            return;
+        }
+
         hayCambios = false;
         $('#contenido-inicial').hidden = true;
-        render();
+        await loadContent(); // trae también lo que otras personas hayan guardado en otras partes
         $('#save-message').textContent = 'Cambios guardados. Ya se ven en la página.';
     } catch (error) {
         console.error('Error al guardar:', error);
