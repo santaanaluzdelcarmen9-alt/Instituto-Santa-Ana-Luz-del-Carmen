@@ -594,7 +594,7 @@ main {
 }
 
 .card {
-    background: white;
+    background: rgb(254, 253, 253);
     padding: clamp(20px, 3vw, 32px);
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
@@ -1223,7 +1223,22 @@ main {
 .docente-dot,
 .grado-dot,
 .noticias-dot {
-    transition: background .2s, width .2s;
+    flex-shrink: 0;
+    transition: background .2s, width .2s, transform .25s, opacity .25s;
+}
+
+/* estilo Instagram: solo 5 bolitas a la vista; las del borde se achican si hay más a ese lado */
+.docente-dot.punto-chico,
+.grado-dot.punto-chico,
+.noticias-dot.punto-chico {
+    transform: scale(.55);
+    opacity: .7;
+}
+
+.docente-dot.punto-oculto,
+.grado-dot.punto-oculto,
+.noticias-dot.punto-oculto {
+    display: none;
 }
 
 /* el punto activo se alarga para que se note dónde vas */
